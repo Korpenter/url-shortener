@@ -42,6 +42,7 @@ func (h *ShortenerHandler) handleGet(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "unknown id", http.StatusNotFound)
 		return
 	}
+	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 	w.Header().Set("Location", l)
 	w.WriteHeader(http.StatusTemporaryRedirect)
 }
