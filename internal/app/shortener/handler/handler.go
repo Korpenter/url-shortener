@@ -44,7 +44,6 @@ func (h *ShortenerHandler) handleGet(w http.ResponseWriter, r *http.Request) {
 	}
 	w.Header().Set("Content-Type", "text/plain")
 	w.Header().Add("Location", l)
-	fmt.Println(l)
 	w.WriteHeader(http.StatusTemporaryRedirect)
 }
 
@@ -63,5 +62,5 @@ func (h *ShortenerHandler) handlePost(w http.ResponseWriter, r *http.Request) {
 	h.store.AddLink(long, short)
 	w.Header().Set("Content-Type", "text/plain;")
 	w.WriteHeader(http.StatusCreated)
-	io.WriteString(w, short)
+	io.WriteString(w, "localhost:8080/"+short)
 }
