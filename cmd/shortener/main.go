@@ -1,10 +1,11 @@
 package main
 
 import (
-	"github.com/Mldlr/url-shortener/internal/app/shortener/server"
+	"github.com/Mldlr/url-shortener/internal/server"
+	"log"
 )
 
 func main() {
-	addr := "localhost:8080"
-	server.StartServer(addr)
+	s := server.New()
+	log.Fatal(s.ListenAndServe())
 }
