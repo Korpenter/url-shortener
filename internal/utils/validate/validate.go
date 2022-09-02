@@ -14,7 +14,7 @@ func IsURL(LongURL string) bool {
 		return false
 	}
 	u, err := url.Parse(LongURL)
-	if err != nil || u.Host != "" {
+	if err != nil || u.Host == "" {
 		return false
 	}
 	return true

@@ -36,5 +36,5 @@ func (r *InMemRepo) Add(long string) string {
 }
 
 func (r *InMemRepo) NewID() int {
-	return len(r.urls)
+	return len(r.urls) + 1
 }

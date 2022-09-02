@@ -2,7 +2,7 @@ package handler
 
 import (
 	"fmt"
-	"github.com/Mldlr/url-shortener/internal/server"
+	"github.com/Mldlr/url-shortener/internal/config"
 	"github.com/Mldlr/url-shortener/internal/storage"
 	"github.com/Mldlr/url-shortener/internal/utils/validate"
 	"io"
@@ -61,5 +61,5 @@ func (h *ShortenerHandler) handleShorten(w http.ResponseWriter, r *http.Request)
 	short := h.store.Add(long)
 	w.Header().Set("Content-Type", "text/plain;")
 	w.WriteHeader(http.StatusCreated)
-	io.WriteString(w, server.BaseURL+short)
+	io.WriteString(w, config.BaseURL+short)
 }
