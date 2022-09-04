@@ -54,7 +54,7 @@ func TestShortenerHandler_ServeHTTP(t *testing.T) {
 			name:    "POST incorrect link ",
 			method:  http.MethodPost,
 			request: "/",
-			body:    "https://yandex",
+			body:    "https://",
 			want: want{
 				contentType: "text/plain; charset=utf-8",
 				statusCode:  http.StatusBadRequest,

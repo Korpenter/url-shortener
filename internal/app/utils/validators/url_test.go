@@ -23,8 +23,8 @@ func TestIsURL(t *testing.T) {
 		},
 		{
 			name: "Incorrect URL #1",
-			url:  "habr",
-			want: false,
+			url:  "localhost.ru",
+			want: true,
 		},
 		{
 			name: "Incorrect URL #2",
