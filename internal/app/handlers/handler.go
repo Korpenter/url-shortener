@@ -35,7 +35,7 @@ func (h *ShortenerHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 func (h *ShortenerHandler) handleExpand(w http.ResponseWriter, r *http.Request) {
 	id := strings.Split(r.URL.Path, "/")[1:]
-	if len(id) < 1 {
+	if len(id[0]) < 1 {
 		http.Error(w, "no id", http.StatusBadRequest)
 		return
 	}

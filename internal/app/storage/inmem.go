@@ -30,7 +30,7 @@ func (r *InMemRepo) Get(id string) (string, error) {
 func (r *InMemRepo) Add(longURL string) string {
 	r.Lock()
 	defer r.Unlock()
-	id := encoders.ToBase62(r.NewID())
+	id := encoders.ToRBase62(r.NewID())
 	r.urls[id] = longURL
 	return id
 }

@@ -9,7 +9,7 @@ const (
 	charSet = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
 )
 
-func ToBase62(num int) string {
+func ToRBase62(num int) string {
 	var b strings.Builder
 	for num > 0 {
 		r := num % base
