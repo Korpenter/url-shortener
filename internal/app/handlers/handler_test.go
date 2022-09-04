@@ -34,7 +34,7 @@ func TestShortenerHandler_ServeHTTP(t *testing.T) {
 			want: want{
 				contentType: "text/plain;",
 				statusCode:  http.StatusCreated,
-				body:        "https://localhost:8080/1",
+				body:        "http://localhost:8080/1",
 				location:    "",
 			},
 		},
@@ -46,7 +46,7 @@ func TestShortenerHandler_ServeHTTP(t *testing.T) {
 			want: want{
 				contentType: "text/plain;",
 				statusCode:  http.StatusCreated,
-				body:        "https://localhost:8080/2",
+				body:        "http://localhost:8080/2",
 				location:    "",
 			},
 		},

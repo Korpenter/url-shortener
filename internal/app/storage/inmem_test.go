@@ -34,7 +34,7 @@ func TestInMemRepo_Add(t *testing.T) {
 				urls: tt.fields.urls,
 			}
 			assert.Equal(t, tt.want, r.Add(tt.args.longURL))
-			assert.Contains(t, tt.want, r.urls)
+			assert.Contains(t, r.urls, tt.want)
 		})
 	}
 }
