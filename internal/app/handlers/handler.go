@@ -1,22 +1,24 @@
-package handler
+package handlers
 
 import (
-	"fmt"
-	"github.com/Mldlr/url-shortener/internal/config"
-	"github.com/Mldlr/url-shortener/internal/storage"
-	"github.com/Mldlr/url-shortener/internal/utils/validate"
+	"github.com/Mldlr/url-shortener/internal/app/config"
+	"github.com/Mldlr/url-shortener/internal/app/storage"
+	"github.com/Mldlr/url-shortener/internal/app/utils/validators"
 	"io"
+	"log"
 	"net/http"
 	"strings"
 )
 
 type ShortenerHandler struct {
-	store *storage.InMemRepo
+	urls storage.Repositories
+	cfg  *config.Config
 }
 
-func NewShortenerHandler() *ShortenerHandler {
+func NewShortenerHandler(r storage.Repositories, c *config.Config) *ShortenerHandler {
 	return &ShortenerHandler{
-		store: storage.NewInMemRepo(),
+		urls: r,
+		cfg:  c,
 	}
 }
 
@@ -37,8 +39,7 @@ func (h *ShortenerHandler) handleExpand(w http.ResponseWriter, r *http.Request) 
 		http.Error(w, "no id", http.StatusBadRequest)
 		return
 	}
-	fmt.Println(id)
-	l, err := h.store.Get(id[0])
+	l, err := h.urls.Get(id[0])
 	if err != nil {
 		http.Error(w, "invalid id", http.StatusNotFound)
 		return
@@ -54,12 +55,14 @@ func (h *ShortenerHandler) handleShorten(w http.ResponseWriter, r *http.Request)
 		return
 	}
 	long := string(b)
-	if !validate.IsURL(long) {
+	if !validators.IsURL(long) {
 		http.Error(w, "invalid url", http.StatusBadRequest)
 		return
 	}
-	short := h.store.Add(long)
+	short := h.urls.Add(long)
 	w.Header().Set("Content-Type", "text/plain;")
 	w.WriteHeader(http.StatusCreated)
-	io.WriteString(w, config.BaseURL+short)
+	if _, err = io.WriteString(w, h.cfg.Prefix+short); err != nil {
+		log.Println(err)
+	}
 }

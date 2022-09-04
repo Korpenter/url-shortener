@@ -1,7 +1,8 @@
-package db
+package storage
 
 import (
 	"fmt"
+	"github.com/Mldlr/url-shortener/internal/app/utils/encoders"
 	"sync"
 )
 
@@ -16,7 +17,7 @@ func NewInMemRepo() *InMemRepo {
 	}
 }
 
-func (r *InMemRepo) GetByID(id string) (string, error) {
+func (r *InMemRepo) Get(id string) (string, error) {
 	r.RLock()
 	defer r.RUnlock()
 	v, ok := r.urls[id]
@@ -26,8 +27,14 @@ func (r *InMemRepo) GetByID(id string) (string, error) {
 	return v, nil
 }
 
-func (r *InMemRepo) AddLink(long string, id string) {
+func (r *InMemRepo) Add(longURL string) string {
 	r.Lock()
 	defer r.Unlock()
-	r.urls[id] = long
+	id := encoders.ToBase62(r.NewID())
+	r.urls[id] = longURL
+	return id
+}
+
+func (r *InMemRepo) NewID() int {
+	return len(r.urls) + 1
 }

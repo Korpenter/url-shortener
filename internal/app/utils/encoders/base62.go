@@ -1,4 +1,4 @@
-package encode
+package encoders
 
 import (
 	"strings"
@@ -6,7 +6,7 @@ import (
 
 const (
 	base    = 62
-	charSet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
+	charSet = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
 )
 
 func ToBase62(num int) string {
