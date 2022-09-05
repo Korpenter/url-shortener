@@ -27,7 +27,7 @@ func (r *MockRepo) Get(id string) (string, error) {
 	defer r.RUnlock()
 	v, ok := r.urls[id]
 	if !ok {
-		return v, fmt.Errorf("unknown id: %s", id)
+		return v, fmt.Errorf("invalid id: %s", id)
 	}
 	return v, nil
 }
