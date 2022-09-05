@@ -12,7 +12,7 @@ import (
 	"testing"
 )
 
-func TestRouter_Get(t *testing.T) {
+func TestRouter(t *testing.T) {
 	type want struct {
 		contentType string
 		statusCode  int
