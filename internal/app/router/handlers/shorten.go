@@ -13,6 +13,11 @@ import (
 func Shorten(repo storage.Repository, c *config.Config) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		b, err := io.ReadAll(r.Body)
+		defer func() {
+			if err = r.Body.Close(); err != nil {
+				log.Println(err)
+			}
+		}()
 		if err != nil {
 			http.Error(w, "error reading request", http.StatusBadRequest)
 			return
