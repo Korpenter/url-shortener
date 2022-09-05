@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/Mldlr/url-shortener/internal/app/config"
+	"github.com/Mldlr/url-shortener/internal/app/router"
 	"github.com/Mldlr/url-shortener/internal/app/server"
 	"github.com/Mldlr/url-shortener/internal/app/storage"
 	"log"
@@ -10,6 +11,7 @@ import (
 func main() {
 	cfg := config.New()
 	repo := storage.NewInMemRepo()
-	s := server.New(repo, cfg)
+	r := router.NewRouter(repo, cfg)
+	s := server.New(r, cfg)
 	log.Fatal(s.ListenAndServe())
 }

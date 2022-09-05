@@ -1,4 +1,4 @@
-package handlers
+package router
 
 import (
 	"github.com/Mldlr/url-shortener/internal/app/config"
@@ -12,7 +12,7 @@ import (
 	"testing"
 )
 
-func TestShortenerHandler_ServeHTTP(t *testing.T) {
+func TestRouter_Get(t *testing.T) {
 	type want struct {
 		contentType string
 		statusCode  int
@@ -34,7 +34,7 @@ func TestShortenerHandler_ServeHTTP(t *testing.T) {
 			want: want{
 				contentType: "text/plain;",
 				statusCode:  http.StatusCreated,
-				body:        "http://localhost:8080/1",
+				body:        "http://localhost:8080/3",
 				location:    "",
 			},
 		},
@@ -46,7 +46,7 @@ func TestShortenerHandler_ServeHTTP(t *testing.T) {
 			want: want{
 				contentType: "text/plain;",
 				statusCode:  http.StatusCreated,
-				body:        "http://localhost:8080/2",
+				body:        "http://localhost:8080/4",
 				location:    "",
 			},
 		},
@@ -54,7 +54,7 @@ func TestShortenerHandler_ServeHTTP(t *testing.T) {
 			name:    "POST incorrect link ",
 			method:  http.MethodPost,
 			request: "/",
-			body:    "https://yandex",
+			body:    "https://",
 			want: want{
 				contentType: "text/plain; charset=utf-8",
 				statusCode:  http.StatusBadRequest,
@@ -87,26 +87,40 @@ func TestShortenerHandler_ServeHTTP(t *testing.T) {
 			},
 		},
 		{
-			name:    "GET empty id ",
+			name:    "Invalid Method #1",
 			method:  http.MethodGet,
 			request: "/",
 			body:    "",
 			want: want{
-				contentType: "text/plain; charset=utf-8",
-				statusCode:  http.StatusBadRequest,
-				body:        "no id\n",
+				contentType: "",
+				statusCode:  http.StatusMethodNotAllowed,
+				body:        "",
+				location:    "",
+			},
+		},
+		{
+			name:    "Invalid Method #2",
+			method:  http.MethodPost,
+			request: "/1993",
+			body:    "",
+			want: want{
+				contentType: "",
+				statusCode:  http.StatusMethodNotAllowed,
+				body:        "",
 				location:    "",
 			},
 		},
 	}
+
 	cfg := config.New()
-	urls := storage.NewInMemRepo()
-	handler := NewShortenerHandler(urls, cfg)
+	mockRepo := storage.NewMockRepo()
+	r := NewRouter(mockRepo, cfg)
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			request := httptest.NewRequest(tt.method, tt.request, strings.NewReader(tt.body))
 			w := httptest.NewRecorder()
-			handler.ServeHTTP(w, request)
+			r.ServeHTTP(w, request)
 			result := w.Result()
 
 			assert.Equal(t, tt.want.statusCode, result.StatusCode)

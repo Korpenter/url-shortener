@@ -7,16 +7,8 @@ import (
 
 func IsURL(longURL string) bool {
 	if !strings.Contains(longURL, "://") {
-		longURL = "https://" + longURL
-	}
-	_, err := url.ParseRequestURI(longURL)
-	if err != nil {
-		return false
+		longURL = "http://" + longURL
 	}
 	u, err := url.Parse(longURL)
-	if err != nil || u.Host == "" || u.Path == "" {
-		return false
-	}
-
-	return true
+	return err == nil && u.Scheme != "" && u.Host != ""
 }
