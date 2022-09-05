@@ -82,7 +82,7 @@ func TestRouter_Get(t *testing.T) {
 			want: want{
 				contentType: "text/plain; charset=utf-8",
 				statusCode:  http.StatusNotFound,
-				body:        "invalid id\n",
+				body:        "invalid id: 1sdG6\n",
 				location:    "",
 			},
 		},
@@ -112,7 +112,7 @@ func TestRouter_Get(t *testing.T) {
 		},
 	}
 
-	cfg := config.New()
+	cfg := config.NewConfig()
 	mockRepo := storage.NewMockRepo()
 	r := NewRouter(mockRepo, cfg)
 

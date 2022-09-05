@@ -11,6 +11,7 @@ type MockRepo struct {
 	sync.RWMutex
 }
 
+// NewMockRepo returns a pointer to a new mock repo instance
 func NewMockRepo() *MockRepo {
 	mock := MockRepo{
 		urls: make(map[string]string),

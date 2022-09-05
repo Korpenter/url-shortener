@@ -9,9 +9,9 @@ import (
 )
 
 func main() {
-	cfg := config.New()
+	cfg := config.NewConfig()
 	repo := storage.NewInMemRepo()
 	r := router.NewRouter(repo, cfg)
-	s := server.New(r, cfg)
+	s := server.NewServer(r, cfg)
 	log.Fatal(s.ListenAndServe())
 }

@@ -22,7 +22,7 @@ func TestIsURL(t *testing.T) {
 			want: true,
 		},
 		{
-			name: "Incorrect URL #1",
+			name: "Correct URL #3",
 			url:  "localhost.ru",
 			want: true,
 		},

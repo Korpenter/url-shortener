@@ -9,6 +9,7 @@ import (
 	"net/http"
 )
 
+// Shorten returns a handler that shortens links and adds them to db
 func Shorten(repo storage.Repository, c *config.Config) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		b, err := io.ReadAll(r.Body)

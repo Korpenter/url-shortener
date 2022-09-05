@@ -7,6 +7,7 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
+// NewRouter returns a chi router instance.
 func NewRouter(repo storage.Repository, c *config.Config) chi.Router {
 	r := chi.NewRouter()
 	r.Get("/{id}", handlers.Expand(repo))

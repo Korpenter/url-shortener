@@ -5,6 +5,7 @@ import (
 	"strings"
 )
 
+// IsURL checks if url is a valid and default it to http if method is not presented.
 func IsURL(longURL string) bool {
 	if !strings.Contains(longURL, "://") {
 		longURL = "http://" + longURL

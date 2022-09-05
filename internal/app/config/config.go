@@ -8,7 +8,8 @@ type Config struct {
 	Prefix string `envconfig:"PREFIX" default:"http://localhost:8080/"`
 }
 
-func New() *Config {
+// NewConfig returns a pointer to a new config instance.
+func NewConfig() *Config {
 	var c Config
 	envconfig.MustProcess("", &c)
 	return &c
