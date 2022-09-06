@@ -41,5 +41,8 @@ func (r *InMemRepo) Add(longURL string) string {
 
 // NewID returns a number to encode as an id
 func (r *InMemRepo) NewID() int {
-	return len(r.urls) + 1
+	r.Lock()
+	defer r.Unlock()
+	l := len(r.urls) + 1
+	return l
 }

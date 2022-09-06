@@ -41,5 +41,8 @@ func (r *MockRepo) Add(longURL string) string {
 }
 
 func (r *MockRepo) NewID() int {
-	return len(r.urls) + 1
+	r.Lock()
+	defer r.Unlock()
+	l := len(r.urls) + 1
+	return l
 }
