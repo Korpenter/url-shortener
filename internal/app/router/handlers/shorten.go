@@ -3,6 +3,7 @@ package handlers
 import (
 	"github.com/Mldlr/url-shortener/internal/app/config"
 	"github.com/Mldlr/url-shortener/internal/app/storage"
+	"github.com/Mldlr/url-shortener/internal/app/utils/encoders"
 	"github.com/Mldlr/url-shortener/internal/app/utils/validators"
 	"io"
 	"log"
@@ -27,7 +28,8 @@ func Shorten(repo storage.Repository, c *config.Config) http.HandlerFunc {
 			http.Error(w, "invalid url", http.StatusBadRequest)
 			return
 		}
-		short := repo.Add(long)
+		id := encoders.ToRBase62(repo.NewID())
+		short := repo.Add(long, id)
 		w.Header().Set("Content-Type", "text/plain;")
 		w.WriteHeader(http.StatusCreated)
 		if _, err = io.WriteString(w, c.Prefix+short); err != nil {

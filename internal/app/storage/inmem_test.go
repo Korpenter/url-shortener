@@ -1,6 +1,7 @@
 package storage
 
 import (
+	"github.com/Mldlr/url-shortener/internal/app/utils/encoders"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"testing"
@@ -30,7 +31,8 @@ func TestInMemRepo_Add(t *testing.T) {
 	mockRepo := NewMockRepo()
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			assert.Equal(t, tt.want, mockRepo.Add(tt.args.longURL))
+			id := encoders.ToRBase62(mockRepo.NewID())
+			assert.Equal(t, tt.want, mockRepo.Add(tt.args.longURL, id))
 			assert.Contains(t, mockRepo.urls, tt.want)
 		})
 	}

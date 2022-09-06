@@ -2,7 +2,6 @@ package storage
 
 import (
 	"fmt"
-	"github.com/Mldlr/url-shortener/internal/app/utils/encoders"
 	"sync"
 )
 
@@ -31,10 +30,9 @@ func (r *InMemRepo) Get(id string) (string, error) {
 }
 
 // Add adds a link to db and returns assigned id
-func (r *InMemRepo) Add(longURL string) string {
+func (r *InMemRepo) Add(longURL, id string) string {
 	r.Lock()
 	defer r.Unlock()
-	id := encoders.ToRBase62(r.NewID())
 	r.urls[id] = longURL
 	return id
 }
@@ -43,6 +41,5 @@ func (r *InMemRepo) Add(longURL string) string {
 func (r *InMemRepo) NewID() int {
 	r.Lock()
 	defer r.Unlock()
-	l := len(r.urls) + 1
-	return l
+	return len(r.urls) + 1
 }
