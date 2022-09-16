@@ -27,6 +27,54 @@ func TestRouter(t *testing.T) {
 		want    want
 	}{
 		{
+			name:    "POST api correct #2",
+			method:  http.MethodPost,
+			request: "/api/shorten",
+			body:    `{"url":"https://github.com/"}`,
+			want: want{
+				contentType: "application/json",
+				statusCode:  http.StatusCreated,
+				body:        `{"result":"http://localhost:8080/3"}` + "\n",
+				location:    "",
+			},
+		},
+		{
+			name:    "POST api correct #2",
+			method:  http.MethodPost,
+			request: "/api/shorten",
+			body:    `{"url":"yandex.com/"}`,
+			want: want{
+				contentType: "application/json",
+				statusCode:  http.StatusCreated,
+				body:        `{"result":"http://localhost:8080/4"}` + "\n",
+				location:    "",
+			},
+		},
+		{
+			name:    "POST api incorrect #1",
+			method:  http.MethodPost,
+			request: "/api/shorten",
+			body:    `{"url":"}`,
+			want: want{
+				contentType: "text/plain; charset=utf-8",
+				statusCode:  http.StatusBadRequest,
+				body:        "error reading request\n",
+				location:    "",
+			},
+		},
+		{
+			name:    "POST api incorrect #2",
+			method:  http.MethodPost,
+			request: "/api/shorten",
+			body:    "https://github.com/",
+			want: want{
+				contentType: "text/plain; charset=utf-8",
+				statusCode:  http.StatusBadRequest,
+				body:        "error reading request\n",
+				location:    "",
+			},
+		},
+		{
 			name:    "POST correct link #1",
 			method:  http.MethodPost,
 			request: "/",
@@ -34,7 +82,7 @@ func TestRouter(t *testing.T) {
 			want: want{
 				contentType: "text/plain;",
 				statusCode:  http.StatusCreated,
-				body:        "http://localhost:8080/3",
+				body:        "http://localhost:8080/5",
 				location:    "",
 			},
 		},
@@ -46,12 +94,12 @@ func TestRouter(t *testing.T) {
 			want: want{
 				contentType: "text/plain;",
 				statusCode:  http.StatusCreated,
-				body:        "http://localhost:8080/4",
+				body:        "http://localhost:8080/6",
 				location:    "",
 			},
 		},
 		{
-			name:    "POST incorrect link ",
+			name:    "POST incorrect link #3",
 			method:  http.MethodPost,
 			request: "/",
 			body:    "https://",
