@@ -19,7 +19,7 @@ type Response struct {
 }
 
 // Expand returns a handler that gets original link from db
-func ApiShorten(repo storage.Repository, c *config.Config) http.HandlerFunc {
+func APIShorten(repo storage.Repository, c *config.Config) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var body *Request
 		if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
@@ -38,7 +38,7 @@ func ApiShorten(repo storage.Repository, c *config.Config) http.HandlerFunc {
 		short := repo.Add(body.URL, id)
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusCreated)
-		if err := json.NewEncoder(w).Encode(Response{c.BaseUrl + short}); err != nil {
+		if err := json.NewEncoder(w).Encode(Response{c.BaseURL + short}); err != nil {
 			http.Error(w, "error building the response", http.StatusInternalServerError)
 			return
 		}
