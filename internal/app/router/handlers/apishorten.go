@@ -11,7 +11,7 @@ import (
 )
 
 type Request struct {
-	URL string `json:"url,omitempty""`
+	URL string `json:"url,omitempty"`
 }
 
 type Response struct {
@@ -38,7 +38,7 @@ func ApiShorten(repo storage.Repository, c *config.Config) http.HandlerFunc {
 		short := repo.Add(body.URL, id)
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusCreated)
-		if err := json.NewEncoder(w).Encode(Response{c.Prefix + short}); err != nil {
+		if err := json.NewEncoder(w).Encode(Response{c.BaseUrl + short}); err != nil {
 			http.Error(w, "error building the response", http.StatusInternalServerError)
 			return
 		}
