@@ -32,7 +32,7 @@ func Shorten(repo storage.Repository, c *config.Config) http.HandlerFunc {
 		short := repo.Add(long, id)
 		w.Header().Set("Content-Type", "text/plain;")
 		w.WriteHeader(http.StatusCreated)
-		if _, err = io.WriteString(w, c.BaseURL+short); err != nil {
+		if _, err = io.WriteString(w, c.BaseURL+"/"+short); err != nil {
 			log.Println(err)
 		}
 	}
