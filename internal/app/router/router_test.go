@@ -160,7 +160,7 @@ func TestRouter(t *testing.T) {
 		},
 	}
 
-	cfg := &config.Config{ServerAddress: "localhost:8080", BaseURL: "http://localhost:8080/"}
+	cfg := &config.Config{ServerAddress: "localhost:8080", BaseURL: "http://localhost:8080"}
 	mockRepo := storage.NewMockRepo()
 	r := NewRouter(mockRepo, cfg)
 
