@@ -31,15 +31,15 @@ func (r *MockRepo) Get(id string) (string, error) {
 	return v, nil
 }
 
-func (r *MockRepo) Add(longURL, id string) (string, error) {
+func (r *MockRepo) Add(longURL, id string) string {
 	r.Lock()
 	defer r.Unlock()
 	r.urls[id] = longURL
-	return id, nil
+	return id
 }
 
-func (r *MockRepo) NewID() (int, error) {
+func (r *MockRepo) NewID() int {
 	r.Lock()
 	defer r.Unlock()
-	return len(r.urls) + 1, nil
+	return len(r.urls) + 1
 }
