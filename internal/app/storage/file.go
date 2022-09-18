@@ -50,11 +50,11 @@ func (r *FileRepo) Load() error {
 func (r *FileRepo) Get(id string) (string, error) {
 	r.Lock()
 	defer r.Unlock()
-	longUrl, ok := r.cache[id]
+	longURL, ok := r.cache[id]
 	if !ok {
 		return "", fmt.Errorf("invalid id: %s", id)
 	}
-	return longUrl, nil
+	return longURL, nil
 }
 
 // Add adds a link to db and returns assigned id
