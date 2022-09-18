@@ -80,7 +80,7 @@ func TestRouter(t *testing.T) {
 			request: "/",
 			body:    "https://github.com/",
 			want: want{
-				contentType: "text/plain;",
+				contentType: "text/plain",
 				statusCode:  http.StatusCreated,
 				body:        "http://localhost:8080/5",
 				location:    "",
@@ -92,7 +92,7 @@ func TestRouter(t *testing.T) {
 			request: "/",
 			body:    "https://yandex.ru/",
 			want: want{
-				contentType: "text/plain;",
+				contentType: "text/plain",
 				statusCode:  http.StatusCreated,
 				body:        "http://localhost:8080/6",
 				location:    "",

@@ -1,13 +1,14 @@
 package handlers
 
 import (
+	"compress/gzip"
 	"encoding/json"
 	"fmt"
 	"github.com/Mldlr/url-shortener/internal/app/config"
 	"github.com/Mldlr/url-shortener/internal/app/storage"
 	"github.com/Mldlr/url-shortener/internal/app/utils/encoders"
 	"github.com/Mldlr/url-shortener/internal/app/utils/validators"
-	"log"
+	"io"
 	"net/http"
 )
 
@@ -22,15 +23,20 @@ type Response struct {
 // Expand returns a handler that gets original link from db
 func APIShorten(repo storage.Repository, c *config.Config) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		var reader io.ReadCloser
+		var err error
+		switch r.Header.Get("Content-Encoding") {
+		case "gzip":
+			reader, err = gzip.NewReader(r.Body)
+			defer reader.Close()
+		default:
+			reader = r.Body
+		}
 		var body *Request
-		if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		if err := json.NewDecoder(reader).Decode(&body); err != nil {
 			http.Error(w, "error reading request", http.StatusBadRequest)
 		}
-		defer func() {
-			if err := r.Body.Close(); err != nil {
-				log.Println(err)
-			}
-		}()
+		defer r.Body.Close()
 		if !validators.IsURL(body.URL) {
 			http.Error(w, "invalid url", http.StatusBadRequest)
 			return

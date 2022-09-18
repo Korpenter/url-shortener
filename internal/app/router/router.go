@@ -13,6 +13,8 @@ func NewRouter(repo storage.Repository, c *config.Config) chi.Router {
 	r := chi.NewRouter()
 	r.Use(middleware.Logger)
 	r.Use(middleware.Recoverer)
+	r.Use(middleware.AllowContentEncoding("gzip"))
+	r.Use(middleware.Compress(5, "application/json, text/plain"))
 	r.Post("/api/shorten", handlers.APIShorten(repo, c))
 	r.Get("/{id}", handlers.Expand(repo))
 	r.Post("/", handlers.Shorten(repo, c))
