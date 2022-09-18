@@ -30,16 +30,16 @@ func (r *InMemRepo) Get(id string) (string, error) {
 }
 
 // Add adds a link to db and returns assigned id
-func (r *InMemRepo) Add(longURL, id string) string {
+func (r *InMemRepo) Add(longURL, id string) (string, error) {
 	r.Lock()
 	defer r.Unlock()
 	r.urls[id] = longURL
-	return id
+	return id, nil
 }
 
 // NewID returns a number to encode as an id
-func (r *InMemRepo) NewID() int {
+func (r *InMemRepo) NewID() (int, error) {
 	r.Lock()
 	defer r.Unlock()
-	return len(r.urls) + 1
+	return len(r.urls) + 1, nil
 }
