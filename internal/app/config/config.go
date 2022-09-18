@@ -17,7 +17,7 @@ func NewConfig() *Config {
 	envconfig.MustProcess("", &c)
 	flag.StringVar(&c.ServerAddress, "a", c.ServerAddress, "server address")
 	flag.StringVar(&c.BaseURL, "b", c.BaseURL, "base url address")
-	flag.StringVar(&c.FileStorage, "s", c.FileStorage, "storage path")
+	flag.StringVar(&c.FileStorage, "f", c.FileStorage, "storage path")
 	flag.Parse()
 	return &c
 }
