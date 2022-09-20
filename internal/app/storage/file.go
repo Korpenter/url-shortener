@@ -10,8 +10,9 @@ import (
 
 // FileRepo is an in-file url storage
 type FileRepo struct {
-	file  *os.File
-	cache map[string]string
+	file    *os.File
+	cache   map[string]string
+	encoder json.Encoder
 	sync.Mutex
 }
 
@@ -22,8 +23,9 @@ func NewFileRepo(filename string) (*FileRepo, error) {
 		return nil, fmt.Errorf("error openin file : %v", err)
 	}
 	return &FileRepo{
-		file:  file,
-		cache: make(map[string]string),
+		file:    file,
+		cache:   make(map[string]string),
+		encoder: *json.NewEncoder(file),
 	}, nil
 }
 
@@ -62,8 +64,7 @@ func (r *FileRepo) Add(longURL, id string) (string, error) {
 		ID:      id,
 		LongURL: longURL,
 	}
-	encoder := json.NewEncoder(r.file)
-	err := encoder.Encode(url)
+	err := r.encoder.Encode(url)
 	if err != nil {
 		return id, err
 	}

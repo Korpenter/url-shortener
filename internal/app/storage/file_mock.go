@@ -5,14 +5,13 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"sync"
 )
 
 // MockFileRepo is a mock of a FileRepo
 type MockFileRepo struct {
-	file  *os.File
-	cache map[string]string
-	sync.Mutex
+	file    *os.File
+	cache   map[string]string
+	encoder json.Encoder
 }
 
 // NewMockFileRepo itiates new mock file repo, creating a file and adding a record to it
@@ -32,8 +31,9 @@ func NewMockFileRepo() (*MockFileRepo, error) {
 		return nil, fmt.Errorf("error creating mock file : %v", err)
 	}
 	mock := MockFileRepo{
-		file:  file,
-		cache: make(map[string]string),
+		file:    file,
+		cache:   make(map[string]string),
+		encoder: *json.NewEncoder(file),
 	}
 	for _, v := range urls {
 		if _, err = mock.Add(v.LongURL, v.ID); err != nil {
@@ -45,8 +45,6 @@ func NewMockFileRepo() (*MockFileRepo, error) {
 
 // DeleteMock deletes mock file
 func (r *MockFileRepo) DeleteMock() error {
-	r.Lock()
-	defer r.Unlock()
 	err := r.file.Close()
 	if err != nil {
 		return fmt.Errorf("error closing mock file : %v", err)
@@ -60,8 +58,6 @@ func (r *MockFileRepo) DeleteMock() error {
 
 // Load loads stored url records from file
 func (r *MockFileRepo) Load() error {
-	r.Lock()
-	defer r.Unlock()
 	decoder := json.NewDecoder(r.file)
 	u := &url{}
 	for {
@@ -77,8 +73,6 @@ func (r *MockFileRepo) Load() error {
 
 // Get returns original link by id or an error if id is not present
 func (r *MockFileRepo) Get(id string) (string, error) {
-	r.Lock()
-	defer r.Unlock()
 	longURL, ok := r.cache[id]
 	if !ok {
 		return "", fmt.Errorf("invalid id: %s", id)
@@ -88,15 +82,12 @@ func (r *MockFileRepo) Get(id string) (string, error) {
 
 // Add adds a link to db and returns assigned id
 func (r *MockFileRepo) Add(longURL, id string) (string, error) {
-	r.Lock()
-	defer r.Unlock()
 	r.cache[id] = longURL
 	url := url{
 		ID:      id,
 		LongURL: longURL,
 	}
-	encoder := json.NewEncoder(r.file)
-	err := encoder.Encode(url)
+	err := r.encoder.Encode(url)
 	if err != nil {
 		return id, err
 	}
@@ -105,7 +96,5 @@ func (r *MockFileRepo) Add(longURL, id string) (string, error) {
 
 // NewID returns a number to encode as an id
 func (r *MockFileRepo) NewID() (int, error) {
-	r.Lock()
-	defer r.Unlock()
 	return len(r.cache) + 1, nil
 }

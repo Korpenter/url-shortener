@@ -2,12 +2,10 @@ package storage
 
 import (
 	"fmt"
-	"sync"
 )
 
 type MockRepo struct {
 	urls map[string]string
-	sync.RWMutex
 }
 
 // NewMockRepo returns a pointer to a new mock repo instance
@@ -22,8 +20,6 @@ func NewMockRepo() *MockRepo {
 }
 
 func (r *MockRepo) Get(id string) (string, error) {
-	r.RLock()
-	defer r.RUnlock()
 	v, ok := r.urls[id]
 	if !ok {
 		return v, fmt.Errorf("invalid id: %s", id)
@@ -32,14 +28,10 @@ func (r *MockRepo) Get(id string) (string, error) {
 }
 
 func (r *MockRepo) Add(longURL, id string) (string, error) {
-	r.Lock()
-	defer r.Unlock()
 	r.urls[id] = longURL
 	return id, nil
 }
 
 func (r *MockRepo) NewID() (int, error) {
-	r.Lock()
-	defer r.Unlock()
 	return len(r.urls) + 1, nil
 }
