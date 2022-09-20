@@ -13,6 +13,12 @@ type Repository interface {
 	NewID() (int, error)
 }
 
+// url represents url record
+type url struct {
+	ID      string `json:"id"`
+	LongURL string `json:"long_url"`
+}
+
 func New(c *config.Config) Repository {
 	if c.FileStorage != "" {
 		r, err := NewFileRepo(c.FileStorage)

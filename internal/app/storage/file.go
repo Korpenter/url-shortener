@@ -8,19 +8,14 @@ import (
 	"sync"
 )
 
-type URL struct {
-	ID      string `json:"id"`
-	LongURL string `json:"long_url"`
-}
-
-// InMemRepo is an in-memory url storage
+// FileRepo is an in-file url storage
 type FileRepo struct {
 	file  *os.File
 	cache map[string]string
 	sync.Mutex
 }
 
-// NewInMemRepo returns a pointer to a new repo instance
+// NewFileRepo returns a pointer to a new repo instance
 func NewFileRepo(filename string) (*FileRepo, error) {
 	file, err := os.OpenFile(filename, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 	if err != nil {
@@ -32,9 +27,10 @@ func NewFileRepo(filename string) (*FileRepo, error) {
 	}, nil
 }
 
+// Load loads stored url records from file
 func (r *FileRepo) Load() error {
 	decoder := json.NewDecoder(r.file)
-	u := &URL{}
+	u := &url{}
 	for {
 		if err := decoder.Decode(u); err == io.EOF {
 			break
@@ -62,7 +58,7 @@ func (r *FileRepo) Add(longURL, id string) (string, error) {
 	r.Lock()
 	defer r.Unlock()
 	r.cache[id] = longURL
-	url := URL{
+	url := url{
 		ID:      id,
 		LongURL: longURL,
 	}

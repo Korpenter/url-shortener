@@ -1,6 +1,7 @@
 package router
 
 import (
+	"compress/gzip"
 	"github.com/Mldlr/url-shortener/internal/app/config"
 	"github.com/Mldlr/url-shortener/internal/app/storage"
 	"github.com/stretchr/testify/assert"
@@ -20,14 +21,15 @@ func TestRouter(t *testing.T) {
 		location    string
 	}
 	tests := []struct {
-		name    string
-		method  string
-		request string
-		body    string
-		want    want
+		name        string
+		compression string
+		method      string
+		request     string
+		body        string
+		want        want
 	}{
 		{
-			name:    "POST api correct #2",
+			name:    "POST api correct #1",
 			method:  http.MethodPost,
 			request: "/api/shorten",
 			body:    `{"url":"https://github.com/"}`,
@@ -158,6 +160,32 @@ func TestRouter(t *testing.T) {
 				location:    "",
 			},
 		},
+		{
+			name:        "POST api correct with compression",
+			compression: "gzip",
+			method:      http.MethodPost,
+			request:     "/api/shorten",
+			body:        `{"url":"https://github.com/"}`,
+			want: want{
+				contentType: "application/json",
+				statusCode:  http.StatusCreated,
+				body:        `{"result":"http://localhost:8080/7"}` + "\n",
+				location:    "",
+			},
+		},
+		{
+			name:        "POST api incorrect with compression",
+			compression: "gzip",
+			method:      http.MethodPost,
+			request:     "/api/shorten",
+			body:        "https://github.com/",
+			want: want{
+				contentType: "text/plain; charset=utf-8",
+				statusCode:  http.StatusBadRequest,
+				body:        "error reading request\n",
+				location:    "",
+			},
+		},
 	}
 
 	cfg := &config.Config{ServerAddress: "localhost:8080", BaseURL: "http://localhost:8080"}
@@ -166,7 +194,10 @@ func TestRouter(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			var reader io.ReadCloser
+			var err error
 			request := httptest.NewRequest(tt.method, tt.request, strings.NewReader(tt.body))
+			request.Header.Set("Accept-Encoding", tt.compression)
 			w := httptest.NewRecorder()
 			r.ServeHTTP(w, request)
 			result := w.Result()
@@ -174,8 +205,14 @@ func TestRouter(t *testing.T) {
 			assert.Equal(t, tt.want.statusCode, result.StatusCode)
 			assert.Equal(t, tt.want.contentType, result.Header.Get("Content-Type"))
 			assert.Equal(t, tt.want.location, result.Header.Get("Location"))
-
-			bodyResult, err := io.ReadAll(result.Body)
+			switch tt.compression {
+			case "gzip":
+				reader, err = gzip.NewReader(result.Body)
+				require.NoError(t, err)
+			default:
+				reader = result.Body
+			}
+			bodyResult, err := io.ReadAll(reader)
 			require.NoError(t, err)
 			err = result.Body.Close()
 			require.NoError(t, err)

@@ -7,7 +7,6 @@ import (
 	"testing"
 )
 
-// TODO rewrite test with mocking
 func TestInMemRepo_Add(t *testing.T) {
 	type args struct {
 		longURL string

@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"compress/gzip"
 	"fmt"
 	"github.com/Mldlr/url-shortener/internal/app/config"
 	"github.com/Mldlr/url-shortener/internal/app/storage"
@@ -15,18 +14,9 @@ import (
 // Shorten returns a handler that shortens links and adds them to db
 func Shorten(repo storage.Repository, c *config.Config) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		var reader io.ReadCloser
-		var err error
-		switch r.Header.Get("Content-Encoding") {
-		case "gzip":
-			reader, err = gzip.NewReader(r.Body)
-			defer reader.Close()
-		default:
-			reader = r.Body
-		}
-		b, err := io.ReadAll(reader)
+		b, err := io.ReadAll(r.Body)
 		if err != nil {
-			http.Error(w, fmt.Sprintf("error reading request %v :", err), http.StatusBadRequest)
+			http.Error(w, "error reading request", http.StatusBadRequest)
 			return
 		}
 		defer r.Body.Close()
