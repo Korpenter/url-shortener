@@ -21,9 +21,10 @@ type Response struct {
 // Expand returns a handler that gets original link from db
 func APIShorten(repo storage.Repository, c *config.Config) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		var body *Request
+		var body Request
 		if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
 			http.Error(w, "error reading request", http.StatusBadRequest)
+			return
 		}
 		defer r.Body.Close()
 		if !validators.IsURL(body.URL) {

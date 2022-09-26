@@ -8,14 +8,14 @@ import (
 )
 
 // MockFileRepo is a mock of a FileRepo
-type MockFileRepo struct {
+type mockFileRepo struct {
 	file    *os.File
 	cache   map[string]string
 	encoder json.Encoder
 }
 
 // NewMockFileRepo itiates new mock file repo, creating a file and adding a record to it
-func NewMockFileRepo() (*MockFileRepo, error) {
+func newMockFileRepo() (*mockFileRepo, error) {
 	urls := []url{
 		{
 			ID:      "1",
@@ -30,13 +30,13 @@ func NewMockFileRepo() (*MockFileRepo, error) {
 	if err != nil {
 		return nil, fmt.Errorf("error creating mock file : %v", err)
 	}
-	mock := MockFileRepo{
+	mock := mockFileRepo{
 		file:    file,
 		cache:   make(map[string]string),
 		encoder: *json.NewEncoder(file),
 	}
 	for _, v := range urls {
-		if _, err = mock.Add(v.LongURL, v.ID); err != nil {
+		if _, err = mock.add(v.LongURL, v.ID); err != nil {
 			return nil, fmt.Errorf("error adding mock records : %v", err)
 		}
 	}
@@ -44,7 +44,7 @@ func NewMockFileRepo() (*MockFileRepo, error) {
 }
 
 // DeleteMock deletes mock file
-func (r *MockFileRepo) DeleteMock() error {
+func (r *mockFileRepo) deleteMock() error {
 	err := r.file.Close()
 	if err != nil {
 		return fmt.Errorf("error closing mock file : %v", err)
@@ -57,7 +57,7 @@ func (r *MockFileRepo) DeleteMock() error {
 }
 
 // Load loads stored url records from file
-func (r *MockFileRepo) Load() error {
+func (r *mockFileRepo) load() error {
 	decoder := json.NewDecoder(r.file)
 	u := &url{}
 	for {
@@ -72,7 +72,7 @@ func (r *MockFileRepo) Load() error {
 }
 
 // Get returns original link by id or an error if id is not present
-func (r *MockFileRepo) Get(id string) (string, error) {
+func (r *mockFileRepo) get(id string) (string, error) {
 	longURL, ok := r.cache[id]
 	if !ok {
 		return "", fmt.Errorf("invalid id: %s", id)
@@ -81,7 +81,7 @@ func (r *MockFileRepo) Get(id string) (string, error) {
 }
 
 // Add adds a link to db and returns assigned id
-func (r *MockFileRepo) Add(longURL, id string) (string, error) {
+func (r *mockFileRepo) add(longURL, id string) (string, error) {
 	r.cache[id] = longURL
 	url := url{
 		ID:      id,
@@ -95,6 +95,6 @@ func (r *MockFileRepo) Add(longURL, id string) (string, error) {
 }
 
 // NewID returns a number to encode as an id
-func (r *MockFileRepo) NewID() (int, error) {
+func (r *mockFileRepo) newID() (int, error) {
 	return len(r.cache) + 1, nil
 }

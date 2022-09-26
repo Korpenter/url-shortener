@@ -28,16 +28,16 @@ func TestFileRepo(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			fRepo, err := NewMockFileRepo()
+			fRepo, err := newMockFileRepo()
 			require.NoError(t, err)
 			for _, v := range tt.urls {
-				_, err = fRepo.Add(v.LongURL, v.ID)
+				_, err = fRepo.add(v.LongURL, v.ID)
 				require.NoError(t, err)
 			}
-			err = fRepo.Load()
+			err = fRepo.load()
 			require.NoError(t, err)
 			assert.Equal(t, tt.want, fRepo.cache)
-			err = fRepo.DeleteMock()
+			err = fRepo.deleteMock()
 			require.NoError(t, err)
 		})
 	}
