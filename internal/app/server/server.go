@@ -11,6 +11,6 @@ import (
 func NewServer(r chi.Router, c *config.Config) *http.Server {
 	return &http.Server{
 		Handler: r,
-		Addr:    fmt.Sprintf("%s:%d", c.Host, c.Port),
+		Addr:    fmt.Sprintf(c.ServerAddress),
 	}
 }

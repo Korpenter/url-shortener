@@ -10,7 +10,7 @@ import (
 
 func main() {
 	cfg := config.NewConfig()
-	repo := storage.NewInMemRepo()
+	repo := storage.New(cfg)
 	r := router.NewRouter(repo, cfg)
 	s := server.NewServer(r, cfg)
 	log.Fatal(s.ListenAndServe())

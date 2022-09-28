@@ -7,7 +7,6 @@ import (
 	"testing"
 )
 
-// TODO rewrite test with mocking
 func TestInMemRepo_Add(t *testing.T) {
 	type args struct {
 		longURL string
@@ -31,8 +30,10 @@ func TestInMemRepo_Add(t *testing.T) {
 	mockRepo := NewMockRepo()
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			id := encoders.ToRBase62(mockRepo.NewID())
-			assert.Equal(t, tt.want, mockRepo.Add(tt.args.longURL, id))
+			id, _ := mockRepo.NewID()
+			id62 := encoders.ToRBase62(id)
+			short, _ := mockRepo.Add(tt.args.longURL, id62)
+			assert.Equal(t, tt.want, short)
 			assert.Contains(t, mockRepo.urls, tt.want)
 		})
 	}
@@ -91,7 +92,8 @@ func TestInMemRepo_NewID(t *testing.T) {
 	mockRepo := NewMockRepo()
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			assert.Equal(t, tt.want, mockRepo.NewID())
+			id, _ := mockRepo.NewID()
+			assert.Equal(t, tt.want, id)
 		})
 	}
 }

@@ -1,27 +1,33 @@
 package handlers
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/Mldlr/url-shortener/internal/app/config"
 	"github.com/Mldlr/url-shortener/internal/app/storage"
 	"github.com/Mldlr/url-shortener/internal/app/utils/encoders"
 	"github.com/Mldlr/url-shortener/internal/app/utils/validators"
-	"io"
-	"log"
 	"net/http"
 )
 
-// Shorten returns a handler that shortens links and adds them to db
-func Shorten(repo storage.Repository, c *config.Config) http.HandlerFunc {
+type Request struct {
+	URL string `json:"url,omitempty"`
+}
+
+type Response struct {
+	Result string `json:"result"`
+}
+
+// Expand returns a handler that gets original link from db
+func APIShorten(repo storage.Repository, c *config.Config) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		b, err := io.ReadAll(r.Body)
-		if err != nil {
+		var body Request
+		if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
 			http.Error(w, "error reading request", http.StatusBadRequest)
 			return
 		}
 		defer r.Body.Close()
-		long := string(b)
-		if !validators.IsURL(long) {
+		if !validators.IsURL(body.URL) {
 			http.Error(w, "invalid url", http.StatusBadRequest)
 			return
 		}
@@ -31,15 +37,16 @@ func Shorten(repo storage.Repository, c *config.Config) http.HandlerFunc {
 			return
 		}
 		id62 := encoders.ToRBase62(id)
-		short, err := repo.Add(long, id62)
+		short, err := repo.Add(body.URL, id62)
 		if err != nil {
 			http.Error(w, fmt.Sprintf("error adding record to db: %v", err), http.StatusInternalServerError)
 			return
 		}
-		w.Header().Set("Content-Type", "text/plain")
+		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusCreated)
-		if _, err = io.WriteString(w, c.BaseURL+"/"+short); err != nil {
-			log.Println(err)
+		if err := json.NewEncoder(w).Encode(Response{c.BaseURL + "/" + short}); err != nil {
+			http.Error(w, "error building the response", http.StatusInternalServerError)
+			return
 		}
 	}
 }
