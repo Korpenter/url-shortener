@@ -11,6 +11,7 @@ type Config struct {
 	BaseURL       string `envconfig:"BASE_URL" default:"http://localhost:8080"`
 	FileStorage   string `envconfig:"FILE_STORAGE_PATH" default:""`
 	SecretKey     string `envconfig:"URL_SHORTENER_KEY" default:"defaultKeyUrlSHoRtenEr"`
+
 }
 
 // NewConfig returns a pointer to a new config instance.
