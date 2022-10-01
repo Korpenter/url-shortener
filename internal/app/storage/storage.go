@@ -5,19 +5,15 @@ import (
 	"log"
 
 	"github.com/Mldlr/url-shortener/internal/app/config"
+	"github.com/Mldlr/url-shortener/internal/app/model"
 )
 
 // Repository interface for storage instances
 type Repository interface {
 	Get(id string) (string, error)
-	Add(long, id string) (string, error)
+	GetByUser(userID string) ([]*model.URL, error)
+	Add(long, short, userID string) (string, error)
 	NewID() (int, error)
-}
-
-// url represents url record
-type url struct {
-	ID      string `json:"id"`
-	LongURL string `json:"long_url"`
 }
 
 func New(c *config.Config) Repository {

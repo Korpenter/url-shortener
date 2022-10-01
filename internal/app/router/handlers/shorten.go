@@ -2,13 +2,14 @@ package handlers
 
 import (
 	"fmt"
+	"io"
+	"log"
+	"net/http"
+
 	"github.com/Mldlr/url-shortener/internal/app/config"
 	"github.com/Mldlr/url-shortener/internal/app/storage"
 	"github.com/Mldlr/url-shortener/internal/app/utils/encoders"
 	"github.com/Mldlr/url-shortener/internal/app/utils/validators"
-	"io"
-	"log"
-	"net/http"
 )
 
 // Shorten returns a handler that shortens links and adds them to db
@@ -31,7 +32,8 @@ func Shorten(repo storage.Repository, c *config.Config) http.HandlerFunc {
 			return
 		}
 		id62 := encoders.ToRBase62(id)
-		short, err := repo.Add(long, id62)
+		userID, _ := r.Cookie("user_id")
+		short, err := repo.Add(long, id62, userID.Value)
 		if err != nil {
 			http.Error(w, fmt.Sprintf("error adding record to db: %v", err), http.StatusInternalServerError)
 			return

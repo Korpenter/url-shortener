@@ -26,15 +26,19 @@ func (a Auth) Authenticate(next http.Handler) http.Handler {
 			fallthrough
 		default:
 			user = &http.Cookie{
+				Name:    "user_id",
 				Path:    "/",
 				Expires: time.Now().Add(time.Hour * 24 * 7),
 				Value:   uuid.New().String(),
 			}
 			signature := &http.Cookie{
+				Name:    "signature",
 				Path:    "/",
 				Expires: time.Now().Add(time.Hour * 24 * 7),
 				Value:   encoders.HMACString(uuid.New().String(), a.Config.SecretKey),
 			}
+			r.AddCookie(user)
+			r.AddCookie(signature)
 			http.SetCookie(w, user)
 			http.SetCookie(w, signature)
 		}
