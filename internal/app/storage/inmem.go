@@ -56,7 +56,7 @@ func (r *InMemRepo) GetByUser(userID string) ([]*model.URL, error) {
 	s := []*model.URL{}
 	s = append(s, r.urlsByUser[userID]...)
 	if len(s) == 0 {
-		return nil, fmt.Errorf("no urls found for user")
+		return nil, nil
 	}
 	return s, nil
 }

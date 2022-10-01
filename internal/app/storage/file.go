@@ -88,7 +88,7 @@ func (r *FileRepo) GetByUser(userID string) ([]*model.URL, error) {
 	s := []*model.URL{}
 	s = append(s, r.cacheByUser[userID]...)
 	if len(s) == 0 {
-		return nil, fmt.Errorf("no urls found for user")
+		return nil, nil
 	}
 	return s, nil
 }

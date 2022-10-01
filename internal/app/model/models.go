@@ -6,3 +6,7 @@ type URL struct {
 	LongURL  string `json:"url"`
 	UserID   string `json:"user_id"`
 }
+
+type Response struct {
+	Result string `json:"result"`
+}
