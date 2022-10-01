@@ -18,7 +18,7 @@ func NewRouter(repo storage.Repository, c *config.Config) chi.Router {
 	r.Use(middleware.Auth{Config: c}.Authenticate)
 	r.Use(chiMiddleware.AllowContentEncoding("gzip"))
 	r.Use(chiMiddleware.Compress(5, "application/json", "text/plain"))
-	r.Get("/api/user/urls", handlers.APIUserExpand(repo))
+	r.Get("/api/user/urls", handlers.APIUserExpand(repo, c))
 	r.Post("/api/shorten", handlers.APIShorten(repo, c))
 	r.Get("/{id}", handlers.Expand(repo))
 	r.Post("/", handlers.Shorten(repo, c))
