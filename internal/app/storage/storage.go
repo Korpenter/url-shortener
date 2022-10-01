@@ -2,8 +2,9 @@ package storage
 
 import (
 	"fmt"
-	"github.com/Mldlr/url-shortener/internal/app/config"
 	"log"
+
+	"github.com/Mldlr/url-shortener/internal/app/config"
 )
 
 // Repository interface for storage instances
