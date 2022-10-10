@@ -23,10 +23,6 @@ func New(c *config.Config) Repository {
 		if err != nil {
 			log.Fatal(fmt.Errorf("error initiating postgres connection : %v", err))
 		}
-		err = r.NewTableUsers()
-		if err != nil {
-			log.Fatal(fmt.Errorf("error creating user table : %v", err))
-		}
 		err = r.NewTableURLs()
 		if err != nil {
 			log.Fatal(fmt.Errorf("error creating urls table  : %v", err))
