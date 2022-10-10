@@ -24,9 +24,9 @@ func NewPostgresRepo(connString string) (*PostgresRepo, error) {
 
 func (r *PostgresRepo) NewTableURLs() error {
 	urls := `CREATE TABLE IF NOT EXISTS urls (
-            	short_url varchar(255) PRIMARY KEY
+            	short_url varchar(255) PRIMARY KEY,
                 original_url varchar(255),
-    			user_id varchar(64),
+    			user_id varchar(64)
                 )`
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
