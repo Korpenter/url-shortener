@@ -14,9 +14,21 @@ type Repository interface {
 	GetByUser(userID string) ([]*model.URL, error)
 	Add(long, short, userID string) (string, error)
 	NewID() (int, error)
+	Ping() error
 }
 
 func New(c *config.Config) Repository {
+	if c.PostgresURL != "" {
+		r, err := NewPostgresRepo(c.PostgresURL)
+		if err != nil {
+			log.Fatal(fmt.Errorf("error initiating postgres connection : %v", err))
+		}
+		err = r.Ping()
+		if err != nil {
+			log.Fatal(fmt.Errorf("error pinging db : %v", err))
+		}
+		return r
+	}
 	if c.FileStorage != "" {
 		r, err := NewFileRepo(c.FileStorage)
 		if err != nil {

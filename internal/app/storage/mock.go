@@ -52,3 +52,7 @@ func (r *mockRepo) GetByUser(userID string) ([]*model.URL, error) {
 	}
 	return s, nil
 }
+
+func (r *mockRepo) Ping() error {
+	return nil
+}

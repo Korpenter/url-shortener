@@ -60,3 +60,7 @@ func (r *InMemRepo) GetByUser(userID string) ([]*model.URL, error) {
 	}
 	return s, nil
 }
+
+func (r *InMemRepo) Ping() error {
+	return nil
+}

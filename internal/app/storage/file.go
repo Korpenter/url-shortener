@@ -92,3 +92,8 @@ func (r *FileRepo) GetByUser(userID string) ([]*model.URL, error) {
 	}
 	return s, nil
 }
+
+func (r *FileRepo) Ping() error {
+	_, err := os.Stat(r.file.Name())
+	return err
+}
