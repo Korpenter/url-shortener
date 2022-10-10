@@ -52,7 +52,7 @@ func (r *PostgresRepo) Add(long, short, userID string) (string, error) {
 	RETURNING short`
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
-	err := r.conn.QueryRow(ctx, addQuery, short, userID).Scan(&short)
+	err := r.conn.QueryRow(ctx, addQuery, short, long, userID).Scan(&short)
 	if err != nil {
 		return "", err
 	}
