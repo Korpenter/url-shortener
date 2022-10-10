@@ -22,6 +22,10 @@ func NewPostgresRepo(connString string) (*PostgresRepo, error) {
 	return &PostgresRepo{conn: conn}, nil
 }
 
+//func (r *PostgresRepo) NewTableUsers() error {
+//	return nil
+//}
+
 func (r *PostgresRepo) Get(id string) (string, error) {
 	return "", nil
 }
