@@ -9,6 +9,7 @@ import (
 )
 
 func main() {
+	print("starting")
 	cfg := config.NewConfig()
 	repo := storage.New(cfg)
 	r := router.NewRouter(repo, cfg)

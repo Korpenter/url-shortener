@@ -34,13 +34,12 @@ func (r *InMemRepo) Get(short string) (string, error) {
 }
 
 // Add adds a link to db and returns assigned id
-func (r *InMemRepo) Add(longURL, short, userID string) (string, error) {
+func (r *InMemRepo) Add(url *model.URL) error {
 	r.Lock()
 	defer r.Unlock()
-	url := &model.URL{ShortURL: short, LongURL: longURL}
-	r.urlsByShort[short] = url
-	r.urlsByUser[userID] = append(r.urlsByUser[userID], url)
-	return short, nil
+	r.urlsByShort[url.ShortURL] = url
+	r.urlsByUser[url.UserID] = append(r.urlsByUser[url.UserID], url)
+	return nil
 }
 
 // NewID returns a number to encode as an id

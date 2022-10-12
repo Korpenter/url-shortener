@@ -25,12 +25,37 @@ func NewFileRepo(filename string) (*FileRepo, error) {
 	if err != nil {
 		return nil, fmt.Errorf("error openin file : %v", err)
 	}
-	return &FileRepo{
+	urls := []model.URL{
+		{
+			ShortURL: "1",
+			LongURL:  "yandex.ru",
+			UserID:   "Helloworld",
+		},
+		{
+			ShortURL: "2",
+			LongURL:  "hero.ru",
+			UserID:   "Helloworld",
+		},
+	}
+	mock := &FileRepo{
 		file:         file,
 		cacheByShort: make(map[string]*model.URL),
 		cacheByUser:  make(map[string][]*model.URL),
 		encoder:      *json.NewEncoder(file),
-	}, nil
+	}
+	for _, v := range urls {
+		err = mock.encoder.Encode(&v)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return mock, nil
+	//return &FileRepo{
+	//	file:         file,
+	//	cacheByShort: make(map[string]*model.URL),
+	//	cacheByUser:  make(map[string][]*model.URL),
+	//	encoder:      *json.NewEncoder(file),
+	//}, nil
 }
 
 // Load loads stored url records from file
@@ -39,6 +64,7 @@ func (r *FileRepo) Load() error {
 	u := &model.URL{}
 	for {
 		if err := decoder.Decode(u); err == io.EOF {
+			fmt.Println(err)
 			break
 		} else if err != nil {
 			return fmt.Errorf("error decoding file : %v", err)
@@ -62,17 +88,16 @@ func (r *FileRepo) Get(short string) (string, error) {
 }
 
 // Add adds a link to db and returns assigned id
-func (r *FileRepo) Add(longURL, short, userID string) (string, error) {
+func (r *FileRepo) Add(url *model.URL) error {
 	r.Lock()
 	defer r.Unlock()
-	url := &model.URL{ShortURL: short, LongURL: longURL, UserID: userID}
-	r.cacheByShort[short] = url
-	r.cacheByUser[userID] = append(r.cacheByUser[userID], url)
+	r.cacheByShort[url.ShortURL] = url
+	r.cacheByUser[url.UserID] = append(r.cacheByUser[url.UserID], url)
 	err := r.encoder.Encode(*url)
 	if err != nil {
-		return short, err
+		return err
 	}
-	return short, nil
+	return nil
 }
 
 // NewID returns a number to encode as an id

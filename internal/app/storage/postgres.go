@@ -7,7 +7,8 @@ import (
 )
 
 type PostgresRepo struct {
-	conn *pgxpool.Pool
+	conn   *pgxpool.Pool
+	lastID int
 }
 
 func NewPostgresRepo(connString string) (*PostgresRepo, error) {
@@ -24,15 +25,29 @@ func NewPostgresRepo(connString string) (*PostgresRepo, error) {
 
 func (r *PostgresRepo) NewTableURLs() error {
 	urls := `CREATE TABLE IF NOT EXISTS urls (
-            	short_url varchar(255) PRIMARY KEY,
-                original_url varchar(255),
-    			user_id varchar(64)
+            	short varchar(255) PRIMARY KEY,
+                original varchar(255),
+    			userid varchar(64)
                 )`
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 	_, err := r.conn.Exec(ctx, urls)
 	if err != nil {
 		return err
+	}
+	return nil
+}
+
+func (r *PostgresRepo) NumberOfURLs() error {
+	amount := `SELECT COUNT(*) FROM urls`
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	rows, err := r.conn.Query(ctx, amount)
+	for rows.Next() {
+		err = rows.Scan(&r.lastID)
+		if err != nil {
+			return err
+		}
 	}
 	return nil
 }
@@ -45,22 +60,23 @@ func (r *PostgresRepo) GetByUser(userID string) ([]*model.URL, error) {
 	return nil, nil
 }
 
-func (r *PostgresRepo) Add(long, short, userID string) (string, error) {
+func (r *PostgresRepo) Add(url *model.URL) error {
 	addQuery := `
-	INSERT INTO urls (short_url, original_url, user_id)
+	INSERT INTO urls (short, original, userid)
 	VALUES ($1, $2, $3)
 	RETURNING short`
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
-	err := r.conn.QueryRow(ctx, addQuery, short, long, userID).Scan(&short)
+	_, err := r.conn.Query(ctx, addQuery, url.ShortURL, url.LongURL, url.UserID)
 	if err != nil {
-		return "", err
+		return err
 	}
-	return short, nil
+	r.lastID++
+	return nil
 }
 
 func (r *PostgresRepo) NewID() (int, error) {
-	return 0, nil
+	return r.lastID + 1, nil
 }
 
 func (r *PostgresRepo) Ping() error {

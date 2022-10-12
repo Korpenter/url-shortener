@@ -12,7 +12,7 @@ import (
 type Repository interface {
 	Get(id string) (string, error)
 	GetByUser(userID string) ([]*model.URL, error)
-	Add(long, short, userID string) (string, error)
+	Add(*model.URL) error
 	NewID() (int, error)
 	Ping() error
 }
@@ -30,6 +30,10 @@ func New(c *config.Config) Repository {
 		err = r.Ping()
 		if err != nil {
 			log.Fatal(fmt.Errorf("error pinging db : %v", err))
+		}
+		err = r.NumberOfURLs()
+		if err != nil {
+			log.Fatal(fmt.Errorf("error getting number of records : %v", err))
 		}
 		return r
 	}

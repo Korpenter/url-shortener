@@ -33,13 +33,11 @@ func (r *mockRepo) Get(short string) (string, error) {
 	return v.LongURL, nil
 }
 
-func (r *mockRepo) Add(longURL, short, userID string) (string, error) {
-	url := &model.URL{ShortURL: short, LongURL: longURL}
-	r.urlsByShort[short] = url
-	r.urlsByUser[userID] = append(r.urlsByUser[userID], url)
-	return short, nil
+func (r *mockRepo) Add(url *model.URL) error {
+	r.urlsByShort[url.ShortURL] = url
+	r.urlsByUser[url.UserID] = append(r.urlsByUser[url.UserID], url)
+	return nil
 }
-
 func (r *mockRepo) NewID() (int, error) {
 	return len(r.urlsByShort) + 1, nil
 }

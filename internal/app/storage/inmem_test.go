@@ -26,6 +26,7 @@ func TestInMemRepo_Add(t *testing.T) {
 			wantContain: model.URL{
 				ShortURL: "3",
 				LongURL:  "https://github.com/",
+				UserID:   "KS097f1lS&F",
 			},
 		},
 		{
@@ -36,6 +37,7 @@ func TestInMemRepo_Add(t *testing.T) {
 			wantContain: model.URL{
 				ShortURL: "4",
 				LongURL:  "https://github.com/",
+				UserID:   "KS097f1lS&F",
 			},
 		},
 	}
@@ -44,8 +46,9 @@ func TestInMemRepo_Add(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			id, _ := mock.NewID()
 			id62 := encoders.ToRBase62(id)
-			short, _ := mock.Add(tt.longURL, id62, tt.userID)
-			assert.Equal(t, tt.wantShort, short)
+			url := model.URL{ShortURL: id62, LongURL: tt.longURL, UserID: tt.userID}
+			_ = mock.Add(&url)
+			assert.Equal(t, tt.wantShort, url.ShortURL)
 			var urls []model.URL
 			for _, value := range mock.urlsByShort {
 				urls = append(urls, *value)

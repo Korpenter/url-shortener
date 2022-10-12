@@ -109,7 +109,7 @@ func (r *mockFileRepo) getByUser(userID string) ([]*model.URL, error) {
 	return s, nil
 }
 
-func (r *mockFileRepo) Ping() error {
+func (r *mockFileRepo) ping() error {
 	_, err := os.Stat(r.file.Name())
 	return err
 }
