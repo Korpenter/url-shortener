@@ -2,6 +2,7 @@ package storage
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"github.com/Mldlr/url-shortener/internal/app/model"
 	"github.com/jackc/pgx/v5"
@@ -14,6 +15,25 @@ type PostgresRepo struct {
 	lastID int
 	sync.Mutex
 }
+
+const (
+	createUrls = `CREATE TABLE IF NOT EXISTS urls (
+            	short varchar(255) PRIMARY KEY,
+                original varchar(255),
+    			userid varchar(64),
+    			UNIQUE(original)
+                )`
+	addQuery = `
+	INSERT INTO urls (short, original, userid)
+	VALUES ($1, $2, $3)
+	ON CONFLICT DO NOTHING
+	RETURNING short`
+	countURL       = `SELECT COUNT(*) FROM urls`
+	getQuery       = `SELECT original FROM urls WHERE short = $1`
+	getByUserQuery = `SELECT * FROM urls WHERE userid = $1`
+	getShort       = `SELECT short FROM urls WHERE original = $1`
+	drop           = `DROP TABLE urls`
+)
 
 func NewPostgresRepo(connString string) (*PostgresRepo, error) {
 	poolConfig, err := pgxpool.ParseConfig(connString)
@@ -28,14 +48,9 @@ func NewPostgresRepo(connString string) (*PostgresRepo, error) {
 }
 
 func (r *PostgresRepo) NewTableURLs() error {
-	urls := `CREATE TABLE IF NOT EXISTS urls (
-            	short varchar(255) PRIMARY KEY,
-                original varchar(255),
-    			userid varchar(64)
-                )`
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
-	_, err := r.conn.Exec(ctx, urls)
+	_, err := r.conn.Exec(ctx, createUrls)
 	if err != nil {
 		return err
 	}
@@ -43,10 +58,9 @@ func (r *PostgresRepo) NewTableURLs() error {
 }
 
 func (r *PostgresRepo) NumberOfURLs() error {
-	amount := `SELECT COUNT(*) FROM urls`
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
-	rows, err := r.conn.Query(ctx, amount)
+	rows, err := r.conn.Query(ctx, countURL)
 	if err != nil {
 		return err
 	}
@@ -62,7 +76,6 @@ func (r *PostgresRepo) NumberOfURLs() error {
 
 func (r *PostgresRepo) Get(id string) (string, error) {
 	var url string
-	getQuery := `SELECT original FROM urls WHERE short = $1`
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 	err := r.conn.QueryRow(ctx, getQuery, id).Scan(&url)
@@ -75,8 +88,6 @@ func (r *PostgresRepo) Get(id string) (string, error) {
 func (r *PostgresRepo) GetByUser(userID string) ([]*model.URL, error) {
 	var url model.URL
 	urls := make([]*model.URL, 0)
-
-	getByUserQuery := `SELECT * FROM urls WHERE userid = $1`
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 	rows, err := r.conn.Query(ctx, getByUserQuery, userID)
@@ -101,33 +112,41 @@ func (r *PostgresRepo) GetByUser(userID string) ([]*model.URL, error) {
 }
 
 func (r *PostgresRepo) Add(url *model.URL) error {
-	addQuery := `
-	INSERT INTO urls (short, original, userid)
-	VALUES ($1, $2, $3)
-	RETURNING short`
+
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
-	_, err := r.conn.Query(ctx, addQuery, url.ShortURL, url.LongURL, url.UserID)
+	err := r.conn.QueryRow(ctx, addQuery, url.ShortURL, url.LongURL, url.UserID).Scan(&url.ShortURL)
 	if err != nil {
-		return err
+		if errors.Is(err, pgx.ErrNoRows) {
+			err = r.conn.QueryRow(ctx, getShort, url.LongURL).Scan(&url.ShortURL)
+		} else {
+			return err
+		}
 	}
-	r.lastID++
 	return nil
 }
 
-func (r *PostgresRepo) AddBatch(urls []model.URL) error {
+func (r *PostgresRepo) AddBatch(urls map[string]*model.URL) error {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
-	_, err := r.conn.CopyFrom(
-		ctx,
-		pgx.Identifier{"urls"},
-		[]string{"short", "original", "userid"},
-		pgx.CopyFromSlice(len(urls), func(i int) ([]any, error) {
-			fmt.Println(i, urls[i])
-			return []any{urls[i].ShortURL, urls[i].LongURL, urls[i].UserID}, nil
-		}),
-	)
+	tx, err := r.conn.Begin(ctx)
 	if err != nil {
+		return err
+	}
+	for _, v := range urls {
+		err = tx.QueryRow(ctx, addQuery, v.ShortURL, v.LongURL, v.UserID).Scan(&v.ShortURL)
+		if err != nil {
+			if errors.Is(err, pgx.ErrNoRows) {
+				err = tx.QueryRow(ctx, getShort, v.LongURL).Scan(&v.ShortURL)
+			}
+			if err != nil {
+				if err = tx.Rollback(ctx); err != nil {
+					return err
+				}
+			}
+		}
+	}
+	if err = tx.Commit(ctx); err != nil {
 		return err
 	}
 	return nil
@@ -146,11 +165,10 @@ func (r *PostgresRepo) Ping() error {
 	return r.conn.Ping(ctx)
 }
 
-func (r *PostgresRepo) Delete() error {
-	urls := `DROP TABLE urls`
+func (r *PostgresRepo) DeleteRepo() error {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
-	_, err := r.conn.Exec(ctx, urls)
+	_, err := r.conn.Exec(ctx, drop)
 	if err != nil {
 		return err
 	}

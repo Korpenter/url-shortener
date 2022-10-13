@@ -13,10 +13,10 @@ type Repository interface {
 	Get(id string) (string, error)
 	GetByUser(userID string) ([]*model.URL, error)
 	Add(*model.URL) error
-	AddBatch([]model.URL) error
+	AddBatch(map[string]*model.URL) error
 	NewID() (int, error)
 	Ping() error
-	Delete() error
+	DeleteRepo() error
 }
 
 func New(c *config.Config) Repository {

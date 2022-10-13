@@ -43,12 +43,12 @@ func (r *InMemRepo) Add(url *model.URL) error {
 	return nil
 }
 
-func (r *InMemRepo) AddBatch(urls []model.URL) error {
+func (r *InMemRepo) AddBatch(urls map[string]*model.URL) error {
 	r.Lock()
 	defer r.Unlock()
 	for _, v := range urls {
-		r.urlsByShort[v.ShortURL] = &v
-		r.urlsByUser[v.UserID] = append(r.urlsByUser[v.UserID], &v)
+		r.urlsByShort[v.ShortURL] = v
+		r.urlsByUser[v.UserID] = append(r.urlsByUser[v.UserID], v)
 	}
 	return nil
 }
@@ -76,7 +76,7 @@ func (r *InMemRepo) Ping() error {
 	return nil
 }
 
-func (r *InMemRepo) Delete() error {
+func (r *InMemRepo) DeleteRepo() error {
 	r.Lock()
 	defer r.Unlock()
 	r.urlsByShort = make(map[string]*model.URL)

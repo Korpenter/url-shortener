@@ -76,12 +76,12 @@ func (r *FileRepo) Add(url *model.URL) error {
 	return nil
 }
 
-func (r *FileRepo) AddBatch(urls []model.URL) error {
+func (r *FileRepo) AddBatch(urls map[string]*model.URL) error {
 	r.Lock()
 	defer r.Unlock()
 	for _, v := range urls {
-		r.cacheByShort[v.ShortURL] = &v
-		r.cacheByUser[v.UserID] = append(r.cacheByUser[v.UserID], &v)
+		r.cacheByShort[v.ShortURL] = v
+		r.cacheByUser[v.UserID] = append(r.cacheByUser[v.UserID], v)
 		err := r.encoder.Encode(&v)
 		if err != nil {
 			return err
@@ -114,7 +114,7 @@ func (r *FileRepo) Ping() error {
 	return err
 }
 
-func (r *FileRepo) Delete() error {
+func (r *FileRepo) DeleteRepo() error {
 	err := r.file.Close()
 	if err != nil {
 		return fmt.Errorf("error closing file : %v", err)

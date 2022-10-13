@@ -41,10 +41,10 @@ func (r *mockRepo) Add(url *model.URL) error {
 	return nil
 }
 
-func (r *mockRepo) AddBatch(urls []model.URL) error {
+func (r *mockRepo) AddBatch(urls map[string]*model.URL) error {
 	for _, v := range urls {
-		r.urlsByShort[v.ShortURL] = &v
-		r.urlsByUser[v.UserID] = append(r.urlsByUser[v.UserID], &v)
+		r.urlsByShort[v.ShortURL] = v
+		r.urlsByUser[v.UserID] = append(r.urlsByUser[v.UserID], v)
 	}
 	return nil
 }
@@ -67,7 +67,7 @@ func (r *mockRepo) Ping() error {
 	return nil
 }
 
-func (r *mockRepo) Delete() error {
+func (r *mockRepo) DeleteRepo() error {
 	r.urlsByShort = make(map[string]*model.URL)
 	r.urlsByUser = make(map[string][]*model.URL)
 	return nil

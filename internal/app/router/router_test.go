@@ -30,7 +30,7 @@ type test struct {
 	want        want
 }
 
-func runInMemRouterTest(t *testing.T, tests []test, db bool) {
+func runRouterTest(t *testing.T, tests []test, db bool) {
 	cfg := &config.Config{ServerAddress: "localhost:8080", BaseURL: "http://localhost:8080"}
 	var mockRepo storage.Repository
 	var prefix string
@@ -44,7 +44,7 @@ func runInMemRouterTest(t *testing.T, tests []test, db bool) {
 		}
 		mockRepo, err = storage.NewPostgresMockRepo(dbURL)
 		require.NoError(t, err)
-		defer mockRepo.Delete()
+		defer mockRepo.DeleteRepo()
 	default:
 		mockRepo = storage.NewMockRepo()
 		prefix = "InMem repo: "
@@ -106,8 +106,8 @@ func TestPostApiCorrect(t *testing.T) {
 			},
 		},
 	}
-	runInMemRouterTest(t, tests, false)
-	runInMemRouterTest(t, tests, true)
+	runRouterTest(t, tests, false)
+	runRouterTest(t, tests, true)
 }
 
 func TestPostApiIncorrect(t *testing.T) {
@@ -137,8 +137,8 @@ func TestPostApiIncorrect(t *testing.T) {
 			},
 		},
 	}
-	runInMemRouterTest(t, tests, false)
-	runInMemRouterTest(t, tests, true)
+	runRouterTest(t, tests, false)
+	runRouterTest(t, tests, true)
 }
 
 func TestPostCorrect(t *testing.T) {
@@ -159,7 +159,7 @@ func TestPostCorrect(t *testing.T) {
 			name:    "POST correct link #2",
 			method:  http.MethodPost,
 			request: "/",
-			body:    "https://yandex.ru/",
+			body:    "https://yandex.ru/1234",
 			want: want{
 				contentType: "text/plain",
 				statusCode:  http.StatusCreated,
@@ -168,8 +168,8 @@ func TestPostCorrect(t *testing.T) {
 			},
 		},
 	}
-	runInMemRouterTest(t, tests, false)
-	runInMemRouterTest(t, tests, true)
+	runRouterTest(t, tests, false)
+	runRouterTest(t, tests, true)
 }
 
 func TestPostIncorrect(t *testing.T) {
@@ -187,8 +187,8 @@ func TestPostIncorrect(t *testing.T) {
 			},
 		},
 	}
-	runInMemRouterTest(t, tests, false)
-	runInMemRouterTest(t, tests, true)
+	runRouterTest(t, tests, false)
+	runRouterTest(t, tests, true)
 }
 
 func TestGet(t *testing.T) {
@@ -218,8 +218,8 @@ func TestGet(t *testing.T) {
 			},
 		},
 	}
-	runInMemRouterTest(t, tests, false)
-	runInMemRouterTest(t, tests, true)
+	runRouterTest(t, tests, false)
+	runRouterTest(t, tests, true)
 }
 
 func TestMethod(t *testing.T) {
@@ -249,8 +249,8 @@ func TestMethod(t *testing.T) {
 			},
 		},
 	}
-	runInMemRouterTest(t, tests, false)
-	runInMemRouterTest(t, tests, true)
+	runRouterTest(t, tests, false)
+	runRouterTest(t, tests, true)
 }
 
 func TestApiPostCompressed(t *testing.T) {
@@ -282,8 +282,8 @@ func TestApiPostCompressed(t *testing.T) {
 			},
 		},
 	}
-	runInMemRouterTest(t, tests, false)
-	runInMemRouterTest(t, tests, true)
+	runRouterTest(t, tests, false)
+	runRouterTest(t, tests, true)
 }
 
 func TestBatchCorrect(t *testing.T) {
@@ -302,8 +302,8 @@ func TestBatchCorrect(t *testing.T) {
 			},
 		},
 	}
-	runInMemRouterTest(t, tests, false)
-	runInMemRouterTest(t, tests, true)
+	runRouterTest(t, tests, false)
+	runRouterTest(t, tests, true)
 }
 
 func TestBatchIncorrect(t *testing.T) {
@@ -322,6 +322,70 @@ func TestBatchIncorrect(t *testing.T) {
 			},
 		},
 	}
-	runInMemRouterTest(t, tests, false)
-	runInMemRouterTest(t, tests, true)
+	runRouterTest(t, tests, false)
+	runRouterTest(t, tests, true)
+}
+
+func TestDBDuplicate(t *testing.T) {
+	tests := []test{
+		{
+			name:        "POST DB add duplicate #1",
+			compression: "gzip",
+			method:      http.MethodPost,
+			request:     "/api/shorten",
+			body:        `{"url":"https://github.com/"}`,
+			want: want{
+				contentType: "application/json",
+				statusCode:  http.StatusCreated,
+				body:        `{"result":"http://localhost:8080/3"}` + "\n",
+				location:    "",
+			},
+		},
+		{
+			name:        "POST DB add duplicate #2",
+			compression: "gzip",
+			method:      http.MethodPost,
+			request:     "/api/shorten",
+			body:        `{"url":"https://github.com/"}`,
+			want: want{
+				contentType: "application/json",
+				statusCode:  http.StatusCreated,
+				body:        `{"result":"http://localhost:8080/3"}` + "\n",
+				location:    "",
+			},
+		},
+		{
+			name:        "POST DB add duplicate #3",
+			compression: "gzip",
+			method:      http.MethodPost,
+			request:     "/api/shorten",
+			body:        `{"url":"https://github.com/"}`,
+			want: want{
+				contentType: "application/json",
+				statusCode:  http.StatusCreated,
+				body:        `{"result":"http://localhost:8080/3"}` + "\n",
+				location:    "",
+			},
+		},
+	}
+	runRouterTest(t, tests, true)
+}
+
+func TestBatchDBDuplicate(t *testing.T) {
+	tests := []test{
+		{
+			name:        "Correct batch POST api",
+			compression: "gzip",
+			method:      http.MethodPost,
+			request:     "/api/shorten/batch",
+			body:        `[{"correlation_id":"TestCorrelationID1","original_url":"https://github.com/"},{"correlation_id":"TestCorrelationID2","original_url":"https://github.com/"}]`,
+			want: want{
+				contentType: "application/json",
+				statusCode:  http.StatusCreated,
+				body:        `[{"correlation_id":"TestCorrelationID1","short_url":"http://localhost:8080/3"},{"correlation_id":"TestCorrelationID2","short_url":"http://localhost:8080/3"}]` + "\n",
+				location:    "",
+			},
+		},
+	}
+	runRouterTest(t, tests, true)
 }
