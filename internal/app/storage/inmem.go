@@ -42,6 +42,16 @@ func (r *InMemRepo) Add(url *model.URL) error {
 	return nil
 }
 
+func (r *InMemRepo) AddBatch(urls []*model.URL) error {
+	r.Lock()
+	defer r.Unlock()
+	for _, v := range urls {
+		r.urlsByShort[v.ShortURL] = v
+		r.urlsByUser[v.UserID] = append(r.urlsByUser[v.UserID], v)
+	}
+	return nil
+}
+
 // NewID returns a number to encode as an id
 func (r *InMemRepo) NewID() (int, error) {
 	r.Lock()

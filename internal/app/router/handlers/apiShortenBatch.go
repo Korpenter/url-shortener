@@ -15,13 +15,14 @@ func APIShortenBatch(repo storage.Repository, c *config.Config) http.HandlerFunc
 	return func(w http.ResponseWriter, r *http.Request) {
 		var bodyItems []model.BatchReqItem
 		var respItems []model.BatchRespItem
+		var urls []*model.URL
 		var url model.URL
 		if err := json.NewDecoder(r.Body).Decode(&bodyItems); err != nil {
 			http.Error(w, "error reading request", http.StatusBadRequest)
 			return
 		}
 		defer r.Body.Close()
-		for _, v := range bodyItems {
+		for i, v := range bodyItems {
 			if !validators.IsURL(v.OrigURL) {
 				respItems = append(respItems, model.BatchRespItem{
 					CorID:    v.CorID,
@@ -36,19 +37,20 @@ func APIShortenBatch(repo storage.Repository, c *config.Config) http.HandlerFunc
 			}
 			userID, _ := r.Cookie("user_id")
 			url = model.URL{
-				ShortURL: encoders.ToRBase62(id),
+				ShortURL: encoders.ToRBase62(id + i),
 				LongURL:  v.OrigURL,
 				UserID:   userID.Value,
 			}
+			urls = append(urls, &url)
 			respItems = append(respItems, model.BatchRespItem{
 				CorID:    v.CorID,
 				ShortURL: c.BaseURL + "/" + url.ShortURL,
 			})
-			err = repo.Add(&url)
-			if err != nil {
-				http.Error(w, fmt.Sprintf("error adding record to db: %v", err), http.StatusInternalServerError)
-				return
-			}
+		}
+		err := repo.AddBatch(urls)
+		if err != nil {
+			http.Error(w, fmt.Sprintf("error adding record to db: %v", err), http.StatusInternalServerError)
+			return
 		}
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusCreated)

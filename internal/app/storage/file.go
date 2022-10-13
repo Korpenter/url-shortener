@@ -25,37 +25,12 @@ func NewFileRepo(filename string) (*FileRepo, error) {
 	if err != nil {
 		return nil, fmt.Errorf("error openin file : %v", err)
 	}
-	urls := []model.URL{
-		{
-			ShortURL: "1",
-			LongURL:  "yandex.ru",
-			UserID:   "Helloworld",
-		},
-		{
-			ShortURL: "2",
-			LongURL:  "hero.ru",
-			UserID:   "Helloworld",
-		},
-	}
-	mock := &FileRepo{
+	return &FileRepo{
 		file:         file,
 		cacheByShort: make(map[string]*model.URL),
 		cacheByUser:  make(map[string][]*model.URL),
 		encoder:      *json.NewEncoder(file),
-	}
-	for _, v := range urls {
-		err = mock.encoder.Encode(&v)
-		if err != nil {
-			return nil, err
-		}
-	}
-	return mock, nil
-	//return &FileRepo{
-	//	file:         file,
-	//	cacheByShort: make(map[string]*model.URL),
-	//	cacheByUser:  make(map[string][]*model.URL),
-	//	encoder:      *json.NewEncoder(file),
-	//}, nil
+	}, nil
 }
 
 // Load loads stored url records from file
@@ -96,6 +71,20 @@ func (r *FileRepo) Add(url *model.URL) error {
 	err := r.encoder.Encode(*url)
 	if err != nil {
 		return err
+	}
+	return nil
+}
+
+func (r *FileRepo) AddBatch(urls []*model.URL) error {
+	r.Lock()
+	defer r.Unlock()
+	for _, v := range urls {
+		r.cacheByShort[v.ShortURL] = v
+		r.cacheByUser[v.UserID] = append(r.cacheByUser[v.UserID], v)
+		err := r.encoder.Encode(&v)
+		if err != nil {
+			return err
+		}
 	}
 	return nil
 }

@@ -3,6 +3,7 @@ package storage
 import (
 	"context"
 	"github.com/Mldlr/url-shortener/internal/app/model"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -103,6 +104,24 @@ func (r *PostgresRepo) Add(url *model.URL) error {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 	_, err := r.conn.Query(ctx, addQuery, url.ShortURL, url.LongURL, url.UserID)
+	if err != nil {
+		return err
+	}
+	r.lastID++
+	return nil
+}
+
+func (r *PostgresRepo) AddBatch(urls []*model.URL) error {
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	_, err := r.conn.CopyFrom(
+		ctx,
+		pgx.Identifier{"people"},
+		[]string{"first_name", "last_name", "age"},
+		pgx.CopyFromSlice(len(urls), func(i int) ([]any, error) {
+			return []any{urls[i].ShortURL, urls[i].LongURL, urls[i].UserID}, nil
+		}),
+	)
 	if err != nil {
 		return err
 	}

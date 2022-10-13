@@ -100,13 +100,25 @@ func (r *mockFileRepo) add(longURL, short, userID string) (string, error) {
 	return short, nil
 }
 
+func (r *mockFileRepo) addBatch(urls []*model.URL) error {
+	for _, v := range urls {
+		r.cacheByShort[v.ShortURL] = v
+		r.cacheByUser[v.UserID] = append(r.cacheByUser[v.UserID], v)
+		err := r.encoder.Encode(&v)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 func (r *mockFileRepo) getByUser(userID string) ([]*model.URL, error) {
-	s := []*model.URL{}
-	s = append(s, r.cacheByUser[userID]...)
-	if len(s) == 0 {
+	urls := make([]*model.URL, 0)
+	urls = append(urls, r.cacheByUser[userID]...)
+	if len(urls) == 0 {
 		return nil, fmt.Errorf("no urls found for user")
 	}
-	return s, nil
+	return urls, nil
 }
 
 func (r *mockFileRepo) ping() error {
