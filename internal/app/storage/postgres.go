@@ -43,6 +43,9 @@ func (r *PostgresRepo) NumberOfURLs() error {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 	rows, err := r.conn.Query(ctx, amount)
+	if err != nil {
+		return err
+	}
 	for rows.Next() {
 		err = rows.Scan(&r.lastID)
 		if err != nil {
@@ -53,11 +56,43 @@ func (r *PostgresRepo) NumberOfURLs() error {
 }
 
 func (r *PostgresRepo) Get(id string) (string, error) {
-	return "", nil
+	var url string
+	getQuery := `SELECT original FROM urls WHERE short = $1`
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	err := r.conn.QueryRow(ctx, getQuery, id).Scan(&url)
+	if err != nil {
+		return "", err
+	}
+	return url, nil
 }
 
 func (r *PostgresRepo) GetByUser(userID string) ([]*model.URL, error) {
-	return nil, nil
+	var url model.URL
+	urls := make([]*model.URL, 0)
+
+	getByUserQuery := `SELECT * FROM urls WHERE userid = $1`
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	rows, err := r.conn.Query(ctx, getByUserQuery, userID)
+	if err != nil {
+		return nil, err
+	}
+	if rows.Err() != nil {
+		return nil, rows.Err()
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		err = rows.Scan(&url.ShortURL, &url.LongURL, &url.UserID)
+		if err != nil {
+			return nil, err
+		}
+
+		urls = append(urls, &url)
+	}
+
+	return urls, nil
 }
 
 func (r *PostgresRepo) Add(url *model.URL) error {
