@@ -66,3 +66,9 @@ func (r *mockRepo) GetByUser(userID string) ([]*model.URL, error) {
 func (r *mockRepo) Ping() error {
 	return nil
 }
+
+func (r *mockRepo) Delete() error {
+	r.urlsByShort = make(map[string]*model.URL)
+	r.urlsByUser = make(map[string][]*model.URL)
+	return nil
+}

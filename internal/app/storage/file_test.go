@@ -52,7 +52,7 @@ func TestFileRepo(t *testing.T) {
 				assert.Contains(t, urls, v)
 
 			}
-			err = fRepo.deleteMock()
+			err = fRepo.delete()
 			require.NoError(t, err)
 		})
 	}

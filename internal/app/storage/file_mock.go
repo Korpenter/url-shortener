@@ -9,7 +9,6 @@ import (
 	"github.com/Mldlr/url-shortener/internal/app/model"
 )
 
-// MockFileRepo is a mock of a FileRepo
 type mockFileRepo struct {
 	file         *os.File
 	cacheByShort map[string]*model.URL
@@ -51,7 +50,7 @@ func newMockFileRepo() (*mockFileRepo, error) {
 }
 
 // DeleteMock deletes mock file
-func (r *mockFileRepo) deleteMock() error {
+func (r *mockFileRepo) delete() error {
 	err := r.file.Close()
 	if err != nil {
 		return fmt.Errorf("error closing mock file : %v", err)

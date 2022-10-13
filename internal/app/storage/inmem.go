@@ -64,14 +64,22 @@ func (r *InMemRepo) NewID() (int, error) {
 func (r *InMemRepo) GetByUser(userID string) ([]*model.URL, error) {
 	r.RLock()
 	defer r.RUnlock()
-	s := []*model.URL{}
-	s = append(s, r.urlsByUser[userID]...)
-	if len(s) == 0 {
+	urls := make([]*model.URL, 0)
+	urls = append(urls, r.urlsByUser[userID]...)
+	if len(urls) == 0 {
 		return nil, nil
 	}
-	return s, nil
+	return urls, nil
 }
 
 func (r *InMemRepo) Ping() error {
+	return nil
+}
+
+func (r *InMemRepo) Delete() error {
+	r.Lock()
+	defer r.Unlock()
+	r.urlsByShort = make(map[string]*model.URL)
+	r.urlsByUser = make(map[string][]*model.URL)
 	return nil
 }

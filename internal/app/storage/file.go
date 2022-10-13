@@ -113,3 +113,15 @@ func (r *FileRepo) Ping() error {
 	_, err := os.Stat(r.file.Name())
 	return err
 }
+
+func (r *FileRepo) Delete() error {
+	err := r.file.Close()
+	if err != nil {
+		return fmt.Errorf("error closing file : %v", err)
+	}
+	err = os.Remove(r.file.Name())
+	if err != nil {
+		return fmt.Errorf("error deleting file : %v", err)
+	}
+	return nil
+}

@@ -16,6 +16,7 @@ type Repository interface {
 	AddBatch([]model.URL) error
 	NewID() (int, error)
 	Ping() error
+	Delete() error
 }
 
 func New(c *config.Config) Repository {

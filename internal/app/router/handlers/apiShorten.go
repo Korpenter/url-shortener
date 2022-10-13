@@ -40,7 +40,7 @@ func APIShorten(repo storage.Repository, c *config.Config) http.HandlerFunc {
 		}
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusCreated)
-		if err := json.NewEncoder(w).Encode(model.Response{c.BaseURL + "/" + body.ShortURL}); err != nil {
+		if err := json.NewEncoder(w).Encode(model.Response{Result: c.BaseURL + "/" + body.ShortURL}); err != nil {
 			http.Error(w, "error building the response", http.StatusInternalServerError)
 			return
 		}

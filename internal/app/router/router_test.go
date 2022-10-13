@@ -9,6 +9,7 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"strings"
 	"testing"
 )
@@ -29,12 +30,24 @@ type test struct {
 	want        want
 }
 
-func runRouterTest(t *testing.T, tests []test) {
+func runInMemRouterTest(t *testing.T, tests []test, db bool) {
 	cfg := &config.Config{ServerAddress: "localhost:8080", BaseURL: "http://localhost:8080"}
-	mockRepo := storage.NewMockRepo()
+	var mockRepo storage.Repository
+	var prefix string
+	var err error
+	switch {
+	case db:
+		mockRepo = storage.NewMockRepo()
+		prefix = "InMem repo: "
+	default:
+		prefix = "Postgres repo: "
+		mockRepo, err = storage.NewPostgresMockRepo(os.Getenv("DATABASE_DSN"))
+		require.NoError(t, err)
+		defer mockRepo.Delete()
+	}
 	r := NewRouter(mockRepo, cfg)
 	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
+		t.Run(prefix+tt.name, func(t *testing.T) {
 			var reader io.ReadCloser
 			var err error
 			request := httptest.NewRequest(tt.method, tt.request, strings.NewReader(tt.body))
@@ -89,7 +102,8 @@ func TestPostApiCorrect(t *testing.T) {
 			},
 		},
 	}
-	runRouterTest(t, tests)
+	runInMemRouterTest(t, tests, false)
+	runInMemRouterTest(t, tests, true)
 }
 
 func TestPostApiIncorrect(t *testing.T) {
@@ -119,7 +133,8 @@ func TestPostApiIncorrect(t *testing.T) {
 			},
 		},
 	}
-	runRouterTest(t, tests)
+	runInMemRouterTest(t, tests, false)
+	runInMemRouterTest(t, tests, true)
 }
 
 func TestPostCorrect(t *testing.T) {
@@ -149,7 +164,8 @@ func TestPostCorrect(t *testing.T) {
 			},
 		},
 	}
-	runRouterTest(t, tests)
+	runInMemRouterTest(t, tests, false)
+	runInMemRouterTest(t, tests, true)
 }
 
 func TestPostIncorrect(t *testing.T) {
@@ -167,7 +183,8 @@ func TestPostIncorrect(t *testing.T) {
 			},
 		},
 	}
-	runRouterTest(t, tests)
+	runInMemRouterTest(t, tests, false)
+	runInMemRouterTest(t, tests, true)
 }
 
 func TestGet(t *testing.T) {
@@ -197,7 +214,8 @@ func TestGet(t *testing.T) {
 			},
 		},
 	}
-	runRouterTest(t, tests)
+	runInMemRouterTest(t, tests, false)
+	runInMemRouterTest(t, tests, true)
 }
 
 func TestMethod(t *testing.T) {
@@ -227,7 +245,8 @@ func TestMethod(t *testing.T) {
 			},
 		},
 	}
-	runRouterTest(t, tests)
+	runInMemRouterTest(t, tests, false)
+	runInMemRouterTest(t, tests, true)
 }
 
 func TestApiPostCompressed(t *testing.T) {
@@ -259,7 +278,8 @@ func TestApiPostCompressed(t *testing.T) {
 			},
 		},
 	}
-	runRouterTest(t, tests)
+	runInMemRouterTest(t, tests, false)
+	runInMemRouterTest(t, tests, true)
 }
 
 func TestBatchCorrect(t *testing.T) {
@@ -278,7 +298,8 @@ func TestBatchCorrect(t *testing.T) {
 			},
 		},
 	}
-	runRouterTest(t, tests)
+	runInMemRouterTest(t, tests, false)
+	runInMemRouterTest(t, tests, true)
 }
 
 func TestBatchIncorrect(t *testing.T) {
@@ -297,5 +318,6 @@ func TestBatchIncorrect(t *testing.T) {
 			},
 		},
 	}
-	runRouterTest(t, tests)
+	runInMemRouterTest(t, tests, false)
+	runInMemRouterTest(t, tests, true)
 }
