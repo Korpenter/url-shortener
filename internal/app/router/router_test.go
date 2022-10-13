@@ -37,13 +37,17 @@ func runInMemRouterTest(t *testing.T, tests []test, db bool) {
 	var err error
 	switch {
 	case db:
-		mockRepo = storage.NewMockRepo()
-		prefix = "InMem repo: "
-	default:
 		prefix = "Postgres repo: "
-		mockRepo, err = storage.NewPostgresMockRepo(os.Getenv("DATABASE_DSN"))
+		dbURL := os.Getenv("DATABASE_DSN")
+		if dbURL == "" {
+			return
+		}
+		mockRepo, err = storage.NewPostgresMockRepo(dbURL)
 		require.NoError(t, err)
 		defer mockRepo.Delete()
+	default:
+		mockRepo = storage.NewMockRepo()
+		prefix = "InMem repo: "
 	}
 	r := NewRouter(mockRepo, cfg)
 	for _, tt := range tests {
