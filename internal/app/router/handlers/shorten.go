@@ -35,7 +35,7 @@ func Shorten(repo storage.Repository, c *config.Config) http.HandlerFunc {
 		id62 := encoders.ToRBase62(id)
 		userID, _ := r.Cookie("user_id")
 		url := model.URL{ShortURL: id62, LongURL: long, UserID: userID.Value}
-		err = repo.Add(&url)
+		_, err = repo.Add(&url)
 		if err != nil {
 			http.Error(w, fmt.Sprintf("error adding record to db: %v", err), http.StatusInternalServerError)
 			return

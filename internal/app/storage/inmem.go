@@ -35,22 +35,22 @@ func (r *InMemRepo) Get(short string) (string, error) {
 }
 
 // Add adds a link to db and returns assigned id
-func (r *InMemRepo) Add(url *model.URL) error {
+func (r *InMemRepo) Add(url *model.URL) (bool, error) {
 	r.Lock()
 	defer r.Unlock()
 	r.urlsByShort[url.ShortURL] = url
 	r.urlsByUser[url.UserID] = append(r.urlsByUser[url.UserID], url)
-	return nil
+	return false, nil
 }
 
-func (r *InMemRepo) AddBatch(urls map[string]*model.URL) error {
+func (r *InMemRepo) AddBatch(urls map[string]*model.URL) (bool, error) {
 	r.Lock()
 	defer r.Unlock()
 	for _, v := range urls {
 		r.urlsByShort[v.ShortURL] = v
 		r.urlsByUser[v.UserID] = append(r.urlsByUser[v.UserID], v)
 	}
-	return nil
+	return false, nil
 }
 
 // NewID returns a number to encode as an id

@@ -349,7 +349,7 @@ func TestDBDuplicate(t *testing.T) {
 			body:        `{"url":"https://github.com/"}`,
 			want: want{
 				contentType: "application/json",
-				statusCode:  http.StatusCreated,
+				statusCode:  http.StatusConflict,
 				body:        `{"result":"http://localhost:8080/3"}` + "\n",
 				location:    "",
 			},
@@ -362,7 +362,7 @@ func TestDBDuplicate(t *testing.T) {
 			body:        `{"url":"https://github.com/"}`,
 			want: want{
 				contentType: "application/json",
-				statusCode:  http.StatusCreated,
+				statusCode:  http.StatusConflict,
 				body:        `{"result":"http://localhost:8080/3"}` + "\n",
 				location:    "",
 			},
@@ -381,7 +381,7 @@ func TestBatchDBDuplicate(t *testing.T) {
 			body:        `[{"correlation_id":"TestCorrelationID1","original_url":"https://github.com/"},{"correlation_id":"TestCorrelationID2","original_url":"https://github.com/"}]`,
 			want: want{
 				contentType: "application/json",
-				statusCode:  http.StatusCreated,
+				statusCode:  http.StatusConflict,
 				body:        `[{"correlation_id":"TestCorrelationID1","short_url":"http://localhost:8080/3"},{"correlation_id":"TestCorrelationID2","short_url":"http://localhost:8080/3"}]` + "\n",
 				location:    "",
 			},

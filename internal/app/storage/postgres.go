@@ -111,8 +111,8 @@ func (r *PostgresRepo) GetByUser(userID string) ([]*model.URL, error) {
 	return urls, nil
 }
 
-func (r *PostgresRepo) Add(url *model.URL) error {
-
+func (r *PostgresRepo) Add(url *model.URL) (bool, error) {
+	var duplicates bool
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 	err := r.conn.QueryRow(ctx, addQuery, url.ShortURL, url.LongURL, url.UserID).Scan(&url.ShortURL)
@@ -120,18 +120,19 @@ func (r *PostgresRepo) Add(url *model.URL) error {
 		if errors.Is(err, pgx.ErrNoRows) {
 			err = r.conn.QueryRow(ctx, getShort, url.LongURL).Scan(&url.ShortURL)
 		} else {
-			return err
+			return false, err
 		}
 	}
-	return nil
+	return duplicates, nil
 }
 
-func (r *PostgresRepo) AddBatch(urls map[string]*model.URL) error {
+func (r *PostgresRepo) AddBatch(urls map[string]*model.URL) (bool, error) {
+	var duplicates bool
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 	tx, err := r.conn.Begin(ctx)
 	if err != nil {
-		return err
+		return false, err
 	}
 	for _, v := range urls {
 		err = tx.QueryRow(ctx, addQuery, v.ShortURL, v.LongURL, v.UserID).Scan(&v.ShortURL)
@@ -141,15 +142,15 @@ func (r *PostgresRepo) AddBatch(urls map[string]*model.URL) error {
 			}
 			if err != nil {
 				if err = tx.Rollback(ctx); err != nil {
-					return err
+					return false, err
 				}
 			}
 		}
 	}
 	if err = tx.Commit(ctx); err != nil {
-		return err
+		return false, err
 	}
-	return nil
+	return duplicates, nil
 }
 
 func (r *PostgresRepo) NewID() (int, error) {

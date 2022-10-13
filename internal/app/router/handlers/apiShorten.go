@@ -33,13 +33,17 @@ func APIShorten(repo storage.Repository, c *config.Config) http.HandlerFunc {
 		body.ShortURL = encoders.ToRBase62(id)
 		userID, _ := r.Cookie("user_id")
 		body.UserID = userID.Value
-		err = repo.Add(body)
+		duplicates, err := repo.Add(body)
 		if err != nil {
 			http.Error(w, fmt.Sprintf("error adding record to db: %v", err), http.StatusInternalServerError)
 			return
 		}
 		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusCreated)
+		if duplicates {
+			w.WriteHeader(http.StatusConflict)
+		} else {
+			w.WriteHeader(http.StatusCreated)
+		}
 		if err := json.NewEncoder(w).Encode(model.Response{Result: c.BaseURL + "/" + body.ShortURL}); err != nil {
 			http.Error(w, "error building the response", http.StatusInternalServerError)
 			return

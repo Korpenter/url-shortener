@@ -64,19 +64,19 @@ func (r *FileRepo) Get(short string) (string, error) {
 }
 
 // Add adds a link to db and returns assigned id
-func (r *FileRepo) Add(url *model.URL) error {
+func (r *FileRepo) Add(url *model.URL) (bool, error) {
 	r.Lock()
 	defer r.Unlock()
 	r.cacheByShort[url.ShortURL] = url
 	r.cacheByUser[url.UserID] = append(r.cacheByUser[url.UserID], url)
 	err := r.encoder.Encode(*url)
 	if err != nil {
-		return err
+		return false, err
 	}
-	return nil
+	return false, nil
 }
 
-func (r *FileRepo) AddBatch(urls map[string]*model.URL) error {
+func (r *FileRepo) AddBatch(urls map[string]*model.URL) (bool, error) {
 	r.Lock()
 	defer r.Unlock()
 	for _, v := range urls {
@@ -84,10 +84,10 @@ func (r *FileRepo) AddBatch(urls map[string]*model.URL) error {
 		r.cacheByUser[v.UserID] = append(r.cacheByUser[v.UserID], v)
 		err := r.encoder.Encode(&v)
 		if err != nil {
-			return err
+			return false, err
 		}
 	}
-	return nil
+	return false, nil
 }
 
 // NewID returns a number to encode as an id

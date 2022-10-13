@@ -35,18 +35,18 @@ func (r *mockRepo) Get(short string) (string, error) {
 	return v.LongURL, nil
 }
 
-func (r *mockRepo) Add(url *model.URL) error {
+func (r *mockRepo) Add(url *model.URL) (bool, error) {
 	r.urlsByShort[url.ShortURL] = url
 	r.urlsByUser[url.UserID] = append(r.urlsByUser[url.UserID], url)
-	return nil
+	return false, nil
 }
 
-func (r *mockRepo) AddBatch(urls map[string]*model.URL) error {
+func (r *mockRepo) AddBatch(urls map[string]*model.URL) (bool, error) {
 	for _, v := range urls {
 		r.urlsByShort[v.ShortURL] = v
 		r.urlsByUser[v.UserID] = append(r.urlsByUser[v.UserID], v)
 	}
-	return nil
+	return false, nil
 }
 
 func (r *mockRepo) NewID() (int, error) {

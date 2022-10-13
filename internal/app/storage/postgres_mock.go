@@ -95,45 +95,49 @@ func (r *PostgresMockRepo) GetByUser(userID string) ([]*model.URL, error) {
 	return urls, nil
 }
 
-func (r *PostgresMockRepo) Add(url *model.URL) error {
+func (r *PostgresMockRepo) Add(url *model.URL) (bool, error) {
 	ctx, cancel := context.WithCancel(context.Background())
+	var duplicates bool
 	defer cancel()
 	err := r.conn.QueryRow(ctx, mockAddQuery, url.ShortURL, url.LongURL, url.UserID).Scan(&url.ShortURL)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
+			duplicates = true
 			err = r.conn.QueryRow(ctx, mockGetShort, url.LongURL).Scan(&url.ShortURL)
-		} else {
-			return err
+		}
+		if err != nil {
+			return false, err
 		}
 	}
-	return nil
+	return duplicates, nil
 }
 
-func (r *PostgresMockRepo) AddBatch(urls map[string]*model.URL) error {
-
+func (r *PostgresMockRepo) AddBatch(urls map[string]*model.URL) (bool, error) {
+	var duplicates bool
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 	tx, err := r.conn.Begin(ctx)
 	if err != nil {
-		return err
+		return false, err
 	}
 	for _, v := range urls {
 		err = tx.QueryRow(ctx, mockAddQuery, v.ShortURL, v.LongURL, v.UserID).Scan(&v.ShortURL)
 		if err != nil {
 			if errors.Is(err, pgx.ErrNoRows) {
+				duplicates = true
 				err = tx.QueryRow(ctx, mockGetShort, v.LongURL).Scan(&v.ShortURL)
 			}
 			if err != nil {
 				if err = tx.Rollback(ctx); err != nil {
-					return err
+					return false, err
 				}
 			}
 		}
 	}
 	if err = tx.Commit(ctx); err != nil {
-		return err
+		return false, err
 	}
-	return nil
+	return duplicates, nil
 }
 
 func (r *PostgresMockRepo) NewID() (int, error) {

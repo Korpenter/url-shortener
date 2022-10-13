@@ -42,19 +42,23 @@ func APIShortenBatch(repo storage.Repository, c *config.Config) http.HandlerFunc
 				UserID:   userID.Value,
 			}
 		}
-		err := repo.AddBatch(urls)
+		duplicates, err := repo.AddBatch(urls)
 		if err != nil {
 			http.Error(w, fmt.Sprintf("error adding record to db: %v", err), http.StatusInternalServerError)
 			return
 		}
-		for k, v := range urls {
+		for _, v := range bodyItems {
 			respItems = append(respItems, model.BatchRespItem{
-				CorID:    k,
-				ShortURL: fmt.Sprintf("%s/%s", c.BaseURL, v.ShortURL),
+				CorID:    v.CorID,
+				ShortURL: fmt.Sprintf("%s/%s", c.BaseURL, urls[v.CorID].ShortURL),
 			})
 		}
 		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusCreated)
+		if duplicates {
+			w.WriteHeader(http.StatusConflict)
+		} else {
+			w.WriteHeader(http.StatusCreated)
+		}
 		if err := json.NewEncoder(w).Encode(respItems); err != nil || len(respItems) == 0 {
 			http.Error(w, "error building the response", http.StatusInternalServerError)
 			return

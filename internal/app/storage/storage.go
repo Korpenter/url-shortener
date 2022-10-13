@@ -12,8 +12,8 @@ import (
 type Repository interface {
 	Get(id string) (string, error)
 	GetByUser(userID string) ([]*model.URL, error)
-	Add(*model.URL) error
-	AddBatch(map[string]*model.URL) error
+	Add(*model.URL) (bool, error)
+	AddBatch(map[string]*model.URL) (bool, error)
 	NewID() (int, error)
 	Ping() error
 	DeleteRepo() error
