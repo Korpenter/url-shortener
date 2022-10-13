@@ -2,6 +2,7 @@ package storage
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"github.com/Mldlr/url-shortener/internal/app/model"
 	"github.com/jackc/pgx/v5"
@@ -25,7 +26,8 @@ func NewPostgresMockRepo(connString string) (*PostgresMockRepo, error) {
 	urls := `CREATE TABLE IF NOT EXISTS urls_test (
             	short varchar(255) PRIMARY KEY,
                 original varchar(255),
-    			userid varchar(64)
+    			userid varchar(64),
+    			UNIQUE(original)
                 )`
 	url1 := &model.URL{ShortURL: "1", LongURL: "https://github.com/Mldlr/url-shortener/internal/app/utils/encoders"}
 	url2 := &model.URL{ShortURL: "2", LongURL: "https://yandex.ru/"}
@@ -86,12 +88,17 @@ func (r *PostgresMockRepo) Add(url *model.URL) error {
 	addQuery := `
 	INSERT INTO urls_test (short, original, userid)
 	VALUES ($1, $2, $3)
+	ON CONFLICT DO NOTHING
 	RETURNING short`
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
-	_, err := r.conn.Query(ctx, addQuery, url.ShortURL, url.LongURL, url.UserID)
+	err := r.conn.QueryRow(ctx, addQuery, url.ShortURL, url.LongURL, url.UserID).Scan(&url.ShortURL)
 	if err != nil {
-		return err
+		if errors.Is(err, pgx.ErrNoRows) {
+			err = r.conn.QueryRow(ctx, `SELECT short FROM urls_test WHERE original = $1`, url.LongURL).Scan(&url.ShortURL)
+		} else {
+			return err
+		}
 	}
 	return nil
 }

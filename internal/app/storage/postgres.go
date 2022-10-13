@@ -2,6 +2,7 @@ package storage
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"github.com/Mldlr/url-shortener/internal/app/model"
 	"github.com/jackc/pgx/v5"
@@ -31,7 +32,8 @@ func (r *PostgresRepo) NewTableURLs() error {
 	urls := `CREATE TABLE IF NOT EXISTS urls (
             	short varchar(255) PRIMARY KEY,
                 original varchar(255),
-    			userid varchar(64)
+    			userid varchar(64),
+    			UNIQUE(original)
                 )`
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
@@ -104,14 +106,18 @@ func (r *PostgresRepo) Add(url *model.URL) error {
 	addQuery := `
 	INSERT INTO urls (short, original, userid)
 	VALUES ($1, $2, $3)
+	ON CONFLICT DO NOTHING
 	RETURNING short`
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
-	_, err := r.conn.Query(ctx, addQuery, url.ShortURL, url.LongURL, url.UserID)
+	err := r.conn.QueryRow(ctx, addQuery, url.ShortURL, url.LongURL, url.UserID).Scan(&url.ShortURL)
 	if err != nil {
-		return err
+		if errors.Is(err, pgx.ErrNoRows) {
+			err = r.conn.QueryRow(ctx, `SELECT short FROM urls WHERE original = $1`, url.LongURL).Scan(&url.ShortURL)
+		} else {
+			return err
+		}
 	}
-	r.lastID++
 	return nil
 }
 
