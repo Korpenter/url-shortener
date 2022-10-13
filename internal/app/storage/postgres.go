@@ -2,14 +2,17 @@ package storage
 
 import (
 	"context"
+	"fmt"
 	"github.com/Mldlr/url-shortener/internal/app/model"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"sync"
 )
 
 type PostgresRepo struct {
 	conn   *pgxpool.Pool
 	lastID int
+	sync.Mutex
 }
 
 func NewPostgresRepo(connString string) (*PostgresRepo, error) {
@@ -49,6 +52,7 @@ func (r *PostgresRepo) NumberOfURLs() error {
 	}
 	for rows.Next() {
 		err = rows.Scan(&r.lastID)
+		fmt.Println("ssssss - ", r.lastID)
 		if err != nil {
 			return err
 		}
@@ -111,26 +115,29 @@ func (r *PostgresRepo) Add(url *model.URL) error {
 	return nil
 }
 
-func (r *PostgresRepo) AddBatch(urls []*model.URL) error {
+func (r *PostgresRepo) AddBatch(urls []model.URL) error {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 	_, err := r.conn.CopyFrom(
 		ctx,
-		pgx.Identifier{"people"},
-		[]string{"first_name", "last_name", "age"},
+		pgx.Identifier{"urls"},
+		[]string{"short", "original", "userid"},
 		pgx.CopyFromSlice(len(urls), func(i int) ([]any, error) {
+			fmt.Println(i, urls[i])
 			return []any{urls[i].ShortURL, urls[i].LongURL, urls[i].UserID}, nil
 		}),
 	)
 	if err != nil {
 		return err
 	}
-	r.lastID++
 	return nil
 }
 
 func (r *PostgresRepo) NewID() (int, error) {
-	return r.lastID + 1, nil
+	r.Lock()
+	defer r.Unlock()
+	r.lastID++
+	return r.lastID, nil
 }
 
 func (r *PostgresRepo) Ping() error {

@@ -14,6 +14,7 @@ type mockFileRepo struct {
 	file         *os.File
 	cacheByShort map[string]*model.URL
 	cacheByUser  map[string][]*model.URL
+	lastID       int
 	encoder      json.Encoder
 }
 
@@ -100,16 +101,21 @@ func (r *mockFileRepo) add(longURL, short, userID string) (string, error) {
 	return short, nil
 }
 
-func (r *mockFileRepo) addBatch(urls []*model.URL) error {
+func (r *mockFileRepo) addBatch(urls []model.URL) error {
 	for _, v := range urls {
-		r.cacheByShort[v.ShortURL] = v
-		r.cacheByUser[v.UserID] = append(r.cacheByUser[v.UserID], v)
-		err := r.encoder.Encode(&v)
+		r.cacheByShort[v.ShortURL] = &v
+		r.cacheByUser[v.UserID] = append(r.cacheByUser[v.UserID], &v)
+		err := r.encoder.Encode(v)
 		if err != nil {
 			return err
 		}
 	}
 	return nil
+}
+
+func (r *FileRepo) newID() (int, error) {
+	r.lastID++
+	return r.lastID, nil
 }
 
 func (r *mockFileRepo) getByUser(userID string) ([]*model.URL, error) {

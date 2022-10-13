@@ -16,6 +16,7 @@ type FileRepo struct {
 	cacheByShort map[string]*model.URL
 	cacheByUser  map[string][]*model.URL
 	encoder      json.Encoder
+	lastID       int
 	sync.RWMutex
 }
 
@@ -75,12 +76,12 @@ func (r *FileRepo) Add(url *model.URL) error {
 	return nil
 }
 
-func (r *FileRepo) AddBatch(urls []*model.URL) error {
+func (r *FileRepo) AddBatch(urls []model.URL) error {
 	r.Lock()
 	defer r.Unlock()
 	for _, v := range urls {
-		r.cacheByShort[v.ShortURL] = v
-		r.cacheByUser[v.UserID] = append(r.cacheByUser[v.UserID], v)
+		r.cacheByShort[v.ShortURL] = &v
+		r.cacheByUser[v.UserID] = append(r.cacheByUser[v.UserID], &v)
 		err := r.encoder.Encode(&v)
 		if err != nil {
 			return err
@@ -93,7 +94,8 @@ func (r *FileRepo) AddBatch(urls []*model.URL) error {
 func (r *FileRepo) NewID() (int, error) {
 	r.Lock()
 	defer r.Unlock()
-	return len(r.cacheByShort) + 1, nil
+	r.lastID++
+	return r.lastID, nil
 }
 
 func (r *FileRepo) GetByUser(userID string) ([]*model.URL, error) {

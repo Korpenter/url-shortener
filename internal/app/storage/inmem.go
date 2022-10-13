@@ -11,6 +11,7 @@ import (
 type InMemRepo struct {
 	urlsByShort map[string]*model.URL
 	urlsByUser  map[string][]*model.URL
+	lastID      int
 	sync.RWMutex
 }
 
@@ -42,12 +43,12 @@ func (r *InMemRepo) Add(url *model.URL) error {
 	return nil
 }
 
-func (r *InMemRepo) AddBatch(urls []*model.URL) error {
+func (r *InMemRepo) AddBatch(urls []model.URL) error {
 	r.Lock()
 	defer r.Unlock()
 	for _, v := range urls {
-		r.urlsByShort[v.ShortURL] = v
-		r.urlsByUser[v.UserID] = append(r.urlsByUser[v.UserID], v)
+		r.urlsByShort[v.ShortURL] = &v
+		r.urlsByUser[v.UserID] = append(r.urlsByUser[v.UserID], &v)
 	}
 	return nil
 }
@@ -56,7 +57,8 @@ func (r *InMemRepo) AddBatch(urls []*model.URL) error {
 func (r *InMemRepo) NewID() (int, error) {
 	r.Lock()
 	defer r.Unlock()
-	return len(r.urlsByShort) + 1, nil
+	r.lastID++
+	return r.lastID, nil
 }
 
 func (r *InMemRepo) GetByUser(userID string) ([]*model.URL, error) {

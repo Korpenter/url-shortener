@@ -9,6 +9,7 @@ import (
 type mockRepo struct {
 	urlsByShort map[string]*model.URL
 	urlsByUser  map[string][]*model.URL
+	lastID      int
 }
 
 // NewMockRepo returns a pointer to a new mock repo instance
@@ -21,6 +22,7 @@ func NewMockRepo() *mockRepo {
 	url2 := &model.URL{ShortURL: "2", LongURL: "https://yandex.ru/"}
 	mock.urlsByShort["1"] = url1
 	mock.urlsByShort["2"] = url2
+	mock.lastID = 2
 	mock.urlsByUser["KS097f1lS&F"] = []*model.URL{url1, url2}
 	return &mock
 }
@@ -39,16 +41,17 @@ func (r *mockRepo) Add(url *model.URL) error {
 	return nil
 }
 
-func (r *mockRepo) AddBatch(urls []*model.URL) error {
+func (r *mockRepo) AddBatch(urls []model.URL) error {
 	for _, v := range urls {
-		r.urlsByShort[v.ShortURL] = v
-		r.urlsByUser[v.UserID] = append(r.urlsByUser[v.UserID], v)
+		r.urlsByShort[v.ShortURL] = &v
+		r.urlsByUser[v.UserID] = append(r.urlsByUser[v.UserID], &v)
 	}
 	return nil
 }
 
 func (r *mockRepo) NewID() (int, error) {
-	return len(r.urlsByShort) + 1, nil
+	r.lastID++
+	return r.lastID, nil
 }
 
 func (r *mockRepo) GetByUser(userID string) ([]*model.URL, error) {
