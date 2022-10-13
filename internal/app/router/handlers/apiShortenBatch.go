@@ -13,32 +13,46 @@ import (
 
 func APIShortenBatch(repo storage.Repository, c *config.Config) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		var body *model.URL
-		if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		var bodyItems []model.BatchReqItem
+		var respItems []model.BatchRespItem
+		var url model.URL
+		if err := json.NewDecoder(r.Body).Decode(&bodyItems); err != nil {
 			http.Error(w, "error reading request", http.StatusBadRequest)
 			return
 		}
 		defer r.Body.Close()
-		if !validators.IsURL(body.LongURL) {
-			http.Error(w, "invalid url", http.StatusBadRequest)
-			return
-		}
-		id, err := repo.NewID()
-		if err != nil {
-			http.Error(w, fmt.Sprintf("error getting new id: %v", err), http.StatusInternalServerError)
-			return
-		}
-		body.ShortURL = encoders.ToRBase62(id)
-		userID, _ := r.Cookie("user_id")
-		body.UserID = userID.Value
-		err = repo.Add(body)
-		if err != nil {
-			http.Error(w, fmt.Sprintf("error adding record to db: %v", err), http.StatusInternalServerError)
-			return
+		for _, v := range bodyItems {
+			if !validators.IsURL(v.OrigURL) {
+				respItems = append(respItems, model.BatchRespItem{
+					CorID:    v.CorID,
+					ShortURL: "incorrect url",
+				})
+				continue
+			}
+			id, err := repo.NewID()
+			if err != nil {
+				http.Error(w, fmt.Sprintf("error getting new id: %v", err), http.StatusInternalServerError)
+				return
+			}
+			userID, _ := r.Cookie("user_id")
+			url = model.URL{
+				ShortURL: encoders.ToRBase62(id),
+				LongURL:  v.OrigURL,
+				UserID:   userID.Value,
+			}
+			respItems = append(respItems, model.BatchRespItem{
+				CorID:    v.CorID,
+				ShortURL: c.BaseURL + "/" + url.ShortURL,
+			})
+			err = repo.Add(&url)
+			if err != nil {
+				http.Error(w, fmt.Sprintf("error adding record to db: %v", err), http.StatusInternalServerError)
+				return
+			}
 		}
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusCreated)
-		if err := json.NewEncoder(w).Encode(model.Response{c.BaseURL + "/" + body.ShortURL}); err != nil {
+		if err := json.NewEncoder(w).Encode(respItems); err != nil || len(respItems) == 0 {
 			http.Error(w, "error building the response", http.StatusInternalServerError)
 			return
 		}
