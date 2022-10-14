@@ -1,7 +1,6 @@
 package storage
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/Mldlr/url-shortener/internal/app/model"
@@ -31,12 +30,12 @@ func TestInMemRepo_Add(t *testing.T) {
 		},
 		{
 			name:      "Successfully added link",
-			longURL:   "https://github.com/",
+			longURL:   "https://github.com/1234",
 			userID:    "KS097f1lS&F",
 			wantShort: "4",
 			wantContain: model.URL{
 				ShortURL: "4",
-				LongURL:  "https://github.com/",
+				LongURL:  "https://github.com/1234",
 				UserID:   "KS097f1lS&F",
 			},
 		},
@@ -83,14 +82,12 @@ func TestInMemRepo_GetByShort(t *testing.T) {
 		},
 	}
 	mock := NewMockRepo()
-	fmt.Println(mock)
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			r := mockRepo{
 				urlsByShort: mock.urlsByShort,
 				urlsByUser:  mock.urlsByUser,
 			}
-			fmt.Println(r)
 			got, err := r.Get(tt.short)
 			if !tt.wantErr {
 				require.NoError(t, err)

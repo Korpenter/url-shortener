@@ -14,7 +14,6 @@ func APIUserExpand(repo storage.Repository, c *config.Config) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		user, _ := r.Cookie("user_id")
 		urls, _ := repo.GetByUser(user.Value)
-		fmt.Println(urls)
 		if len(urls) == 0 {
 			w.WriteHeader(http.StatusNoContent)
 			return

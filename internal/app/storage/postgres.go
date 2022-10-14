@@ -66,7 +66,6 @@ func (r *PostgresRepo) NumberOfURLs() error {
 	}
 	for rows.Next() {
 		err = rows.Scan(&r.lastID)
-		fmt.Println("ssssss - ", r.lastID)
 		if err != nil {
 			return err
 		}
@@ -118,8 +117,10 @@ func (r *PostgresRepo) Add(url *model.URL) (bool, error) {
 	err := r.conn.QueryRow(ctx, addQuery, url.ShortURL, url.LongURL, url.UserID).Scan(&url.ShortURL)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
+			duplicates = true
 			err = r.conn.QueryRow(ctx, getShort, url.LongURL).Scan(&url.ShortURL)
-		} else {
+		}
+		if err != nil {
 			return false, err
 		}
 	}
@@ -138,6 +139,7 @@ func (r *PostgresRepo) AddBatch(urls map[string]*model.URL) (bool, error) {
 		err = tx.QueryRow(ctx, addQuery, v.ShortURL, v.LongURL, v.UserID).Scan(&v.ShortURL)
 		if err != nil {
 			if errors.Is(err, pgx.ErrNoRows) {
+				duplicates = true
 				err = tx.QueryRow(ctx, getShort, v.LongURL).Scan(&v.ShortURL)
 			}
 			if err != nil {

@@ -9,17 +9,19 @@ import (
 
 // InMemRepo is an in-memory url storage
 type InMemRepo struct {
-	urlsByShort map[string]*model.URL
-	urlsByUser  map[string][]*model.URL
-	lastID      int
+	existingURLs map[string]*model.URL
+	urlsByShort  map[string]*model.URL
+	urlsByUser   map[string][]*model.URL
+	lastID       int
 	sync.RWMutex
 }
 
 // NewInMemRepo returns a pointer to a new repo instance
 func NewInMemRepo() *InMemRepo {
 	return &InMemRepo{
-		urlsByShort: make(map[string]*model.URL),
-		urlsByUser:  make(map[string][]*model.URL),
+		urlsByShort:  make(map[string]*model.URL),
+		urlsByUser:   make(map[string][]*model.URL),
+		existingURLs: make(map[string]*model.URL),
 	}
 }
 
@@ -38,19 +40,31 @@ func (r *InMemRepo) Get(short string) (string, error) {
 func (r *InMemRepo) Add(url *model.URL) (bool, error) {
 	r.Lock()
 	defer r.Unlock()
+	if v, k := r.existingURLs[url.LongURL]; k {
+		url.ShortURL = v.ShortURL
+		return true, nil
+	}
 	r.urlsByShort[url.ShortURL] = url
 	r.urlsByUser[url.UserID] = append(r.urlsByUser[url.UserID], url)
+	r.existingURLs[url.LongURL] = url
 	return false, nil
 }
 
 func (r *InMemRepo) AddBatch(urls map[string]*model.URL) (bool, error) {
 	r.Lock()
 	defer r.Unlock()
+	var duplicates bool
 	for _, v := range urls {
+		if i, k := r.existingURLs[v.LongURL]; k {
+			duplicates = true
+			v.ShortURL = i.ShortURL
+			continue
+		}
+		r.existingURLs[v.LongURL] = v
 		r.urlsByShort[v.ShortURL] = v
 		r.urlsByUser[v.UserID] = append(r.urlsByUser[v.UserID], v)
 	}
-	return false, nil
+	return duplicates, nil
 }
 
 // NewID returns a number to encode as an id

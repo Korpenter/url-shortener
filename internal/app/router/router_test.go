@@ -326,7 +326,50 @@ func TestBatchIncorrect(t *testing.T) {
 	runRouterTest(t, tests, true)
 }
 
-func TestDBDuplicate(t *testing.T) {
+func TestPostDuplicate(t *testing.T) {
+	tests := []test{
+		{
+			name:    "POST correct link #1",
+			method:  http.MethodPost,
+			request: "/",
+			body:    "https://github.com/",
+			want: want{
+				contentType: "text/plain",
+				statusCode:  http.StatusCreated,
+				body:        "http://localhost:8080/3",
+				location:    "",
+			},
+		},
+		{
+			name:    "POST correct link #2",
+			method:  http.MethodPost,
+			request: "/",
+			body:    "https://github.com/",
+			want: want{
+				contentType: "text/plain",
+				statusCode:  http.StatusConflict,
+				body:        "http://localhost:8080/3",
+				location:    "",
+			},
+		},
+		{
+			name:    "POST correct link #3",
+			method:  http.MethodPost,
+			request: "/",
+			body:    "https://github.com/",
+			want: want{
+				contentType: "text/plain",
+				statusCode:  http.StatusConflict,
+				body:        "http://localhost:8080/3",
+				location:    "",
+			},
+		},
+	}
+	runRouterTest(t, tests, true)
+	runRouterTest(t, tests, false)
+}
+
+func TestApiDuplicate(t *testing.T) {
 	tests := []test{
 		{
 			name:        "POST DB add duplicate #1",
@@ -369,12 +412,13 @@ func TestDBDuplicate(t *testing.T) {
 		},
 	}
 	runRouterTest(t, tests, true)
+	runRouterTest(t, tests, false)
 }
 
-func TestBatchDBDuplicate(t *testing.T) {
+func TestApiBatchDuplicate(t *testing.T) {
 	tests := []test{
 		{
-			name:        "Correct batch POST api",
+			name:        "Correct batch POST api.",
 			compression: "gzip",
 			method:      http.MethodPost,
 			request:     "/api/shorten/batch",
@@ -388,4 +432,5 @@ func TestBatchDBDuplicate(t *testing.T) {
 		},
 	}
 	runRouterTest(t, tests, true)
+	runRouterTest(t, tests, false)
 }

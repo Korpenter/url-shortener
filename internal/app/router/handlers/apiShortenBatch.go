@@ -30,7 +30,6 @@ func APIShortenBatch(repo storage.Repository, c *config.Config) http.HandlerFunc
 				continue
 			}
 			id, err := repo.NewID()
-			fmt.Println(id)
 			if err != nil {
 				http.Error(w, fmt.Sprintf("error getting new id: %v", err), http.StatusInternalServerError)
 				return

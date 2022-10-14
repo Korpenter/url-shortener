@@ -15,6 +15,7 @@ type FileRepo struct {
 	file         *os.File
 	cacheByShort map[string]*model.URL
 	cacheByUser  map[string][]*model.URL
+	existingURLs map[string]*model.URL
 	encoder      json.Encoder
 	lastID       int
 	sync.RWMutex
@@ -30,6 +31,7 @@ func NewFileRepo(filename string) (*FileRepo, error) {
 		file:         file,
 		cacheByShort: make(map[string]*model.URL),
 		cacheByUser:  make(map[string][]*model.URL),
+		existingURLs: make(map[string]*model.URL),
 		encoder:      *json.NewEncoder(file),
 	}, nil
 }
@@ -40,7 +42,6 @@ func (r *FileRepo) Load() error {
 	u := &model.URL{}
 	for {
 		if err := decoder.Decode(u); err == io.EOF {
-			fmt.Println(err)
 			break
 		} else if err != nil {
 			return fmt.Errorf("error decoding file : %v", err)
@@ -67,8 +68,13 @@ func (r *FileRepo) Get(short string) (string, error) {
 func (r *FileRepo) Add(url *model.URL) (bool, error) {
 	r.Lock()
 	defer r.Unlock()
+	if v, k := r.existingURLs[url.LongURL]; k {
+		url.ShortURL = v.ShortURL
+		return true, nil
+	}
 	r.cacheByShort[url.ShortURL] = url
 	r.cacheByUser[url.UserID] = append(r.cacheByUser[url.UserID], url)
+	r.existingURLs[url.LongURL] = url
 	err := r.encoder.Encode(*url)
 	if err != nil {
 		return false, err
@@ -79,7 +85,13 @@ func (r *FileRepo) Add(url *model.URL) (bool, error) {
 func (r *FileRepo) AddBatch(urls map[string]*model.URL) (bool, error) {
 	r.Lock()
 	defer r.Unlock()
+	var duplicates bool
 	for _, v := range urls {
+		if i, k := r.existingURLs[v.LongURL]; k {
+			duplicates = true
+			v.ShortURL = i.ShortURL
+			continue
+		}
 		r.cacheByShort[v.ShortURL] = v
 		r.cacheByUser[v.UserID] = append(r.cacheByUser[v.UserID], v)
 		err := r.encoder.Encode(&v)
@@ -87,7 +99,7 @@ func (r *FileRepo) AddBatch(urls map[string]*model.URL) (bool, error) {
 			return false, err
 		}
 	}
-	return false, nil
+	return duplicates, nil
 }
 
 // NewID returns a number to encode as an id
