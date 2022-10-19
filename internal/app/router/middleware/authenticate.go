@@ -15,17 +15,15 @@ type Auth struct {
 
 func (a Auth) Authenticate(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		user, err := r.Cookie("user_id")
-		switch err {
-		case nil:
-			userID := user.Value
+		switch userID, found := GetUserID(r); found {
+		case true:
 			requestSignature, _ := r.Cookie("signature")
 			if requestSignature.Value == encoders.HMACString(userID, a.Config.SecretKey) {
 				break
 			}
 			fallthrough
 		default:
-			user = &http.Cookie{
+			userID := &http.Cookie{
 				Name:    "user_id",
 				Path:    "/",
 				Expires: time.Now().Add(time.Hour * 24 * 7),
@@ -37,11 +35,19 @@ func (a Auth) Authenticate(next http.Handler) http.Handler {
 				Expires: time.Now().Add(time.Hour * 24 * 7),
 				Value:   encoders.HMACString(uuid.New().String(), a.Config.SecretKey),
 			}
-			r.AddCookie(user)
+			r.AddCookie(userID)
 			r.AddCookie(signature)
-			http.SetCookie(w, user)
+			http.SetCookie(w, userID)
 			http.SetCookie(w, signature)
 		}
 		next.ServeHTTP(w, r)
 	})
+}
+
+func GetUserID(r *http.Request) (string, bool) {
+	userID, err := r.Cookie("user_id")
+	if err != nil {
+		return "", false
+	}
+	return userID.Value, true
 }

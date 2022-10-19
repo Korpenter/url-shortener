@@ -9,10 +9,10 @@ import (
 )
 
 func main() {
-	print("starting")
 	cfg := config.NewConfig()
 	repo := storage.New(cfg)
 	r := router.NewRouter(repo, cfg)
 	s := server.NewServer(r, cfg)
+	log.Printf("Starting with cfg: %+v", cfg)
 	log.Fatal(s.ListenAndServe())
 }

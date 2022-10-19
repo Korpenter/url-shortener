@@ -3,6 +3,7 @@ package handlers
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/Mldlr/url-shortener/internal/app/router/middleware"
 	"net/http"
 
 	"github.com/Mldlr/url-shortener/internal/app/config"
@@ -31,8 +32,11 @@ func APIShorten(repo storage.Repository, c *config.Config) http.HandlerFunc {
 			return
 		}
 		body.ShortURL = encoders.ToRBase62(id)
-		userID, _ := r.Cookie("user_id")
-		body.UserID = userID.Value
+		userID, found := middleware.GetUserID(r)
+		if !found {
+			http.Error(w, fmt.Sprintf("error getting user cookie: %v", err), http.StatusInternalServerError)
+		}
+		body.UserID = userID
 		duplicates, err := repo.Add(body)
 		if err != nil {
 			http.Error(w, fmt.Sprintf("error adding record to db: %v", err), http.StatusInternalServerError)

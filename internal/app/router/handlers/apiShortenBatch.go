@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/Mldlr/url-shortener/internal/app/config"
 	"github.com/Mldlr/url-shortener/internal/app/model"
+	"github.com/Mldlr/url-shortener/internal/app/router/middleware"
 	"github.com/Mldlr/url-shortener/internal/app/storage"
 	"github.com/Mldlr/url-shortener/internal/app/utils/encoders"
 	"github.com/Mldlr/url-shortener/internal/app/utils/validators"
@@ -34,11 +35,14 @@ func APIShortenBatch(repo storage.Repository, c *config.Config) http.HandlerFunc
 				http.Error(w, fmt.Sprintf("error getting new id: %v", err), http.StatusInternalServerError)
 				return
 			}
-			userID, _ := r.Cookie("user_id")
+			userID, found := middleware.GetUserID(r)
+			if !found {
+				http.Error(w, fmt.Sprintf("error getting user cookie: %v", err), http.StatusInternalServerError)
+			}
 			urls[v.CorID] = &model.URL{
 				ShortURL: encoders.ToRBase62(id),
 				LongURL:  v.OrigURL,
-				UserID:   userID.Value,
+				UserID:   userID,
 			}
 		}
 		duplicates, err := repo.AddBatch(urls)
