@@ -50,17 +50,14 @@ func NewPostgresMockRepo(connString string) (*PostgresMockRepo, error) {
 		return nil, err
 	}
 	repo := &PostgresMockRepo{conn: conn}
-	repo.Add(url1)
-	repo.Add(url2)
+	repo.Add(url1, nil)
+	repo.Add(url2, nil)
 	repo.lastID = 2
 	return repo, nil
 }
 
-func (r *PostgresMockRepo) Get(id string) (string, error) {
+func (r *PostgresMockRepo) Get(id string, ctx context.Context) (string, error) {
 	var url string
-
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
 	err := r.conn.QueryRow(ctx, mockGetQuery, id).Scan(&url)
 	if err != nil {
 		return "", fmt.Errorf("invalid id: %v", id)
@@ -68,12 +65,9 @@ func (r *PostgresMockRepo) Get(id string) (string, error) {
 	return url, nil
 }
 
-func (r *PostgresMockRepo) GetByUser(userID string) ([]*model.URL, error) {
+func (r *PostgresMockRepo) GetByUser(userID string, ctx context.Context) ([]*model.URL, error) {
 	var url model.URL
 	urls := make([]*model.URL, 0)
-
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
 	rows, err := r.conn.Query(ctx, mockGetByUserQuery, userID)
 	if err != nil {
 		return nil, err
@@ -95,10 +89,8 @@ func (r *PostgresMockRepo) GetByUser(userID string) ([]*model.URL, error) {
 	return urls, nil
 }
 
-func (r *PostgresMockRepo) Add(url *model.URL) (bool, error) {
-	ctx, cancel := context.WithCancel(context.Background())
+func (r *PostgresMockRepo) Add(url *model.URL, ctx context.Context) (bool, error) {
 	var duplicates bool
-	defer cancel()
 	err := r.conn.QueryRow(ctx, mockAddQuery, url.ShortURL, url.LongURL, url.UserID).Scan(&url.ShortURL)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
@@ -112,10 +104,8 @@ func (r *PostgresMockRepo) Add(url *model.URL) (bool, error) {
 	return duplicates, nil
 }
 
-func (r *PostgresMockRepo) AddBatch(urls map[string]*model.URL) (bool, error) {
+func (r *PostgresMockRepo) AddBatch(urls map[string]*model.URL, ctx context.Context) (bool, error) {
 	var duplicates bool
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
 	tx, err := r.conn.Begin(ctx)
 	if err != nil {
 		return false, err
@@ -145,15 +135,11 @@ func (r *PostgresMockRepo) NewID() (int, error) {
 	return r.lastID, nil
 }
 
-func (r *PostgresMockRepo) Ping() error {
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
+func (r *PostgresMockRepo) Ping(ctx context.Context) error {
 	return r.conn.Ping(ctx)
 }
 
-func (r *PostgresMockRepo) DeleteRepo() error {
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
+func (r *PostgresMockRepo) DeleteRepo(ctx context.Context) error {
 	_, err := r.conn.Exec(ctx, mockDrop)
 	if err != nil {
 		return err

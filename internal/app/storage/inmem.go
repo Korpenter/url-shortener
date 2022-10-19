@@ -1,6 +1,7 @@
 package storage
 
 import (
+	"context"
 	"fmt"
 	"sync"
 
@@ -26,7 +27,7 @@ func NewInMemRepo() *InMemRepo {
 }
 
 // Get returns original link by id or an error if id is not present
-func (r *InMemRepo) Get(short string) (string, error) {
+func (r *InMemRepo) Get(short string, ctx context.Context) (string, error) {
 	r.RLock()
 	defer r.RUnlock()
 	v, ok := r.urlsByShort[short]
@@ -37,7 +38,7 @@ func (r *InMemRepo) Get(short string) (string, error) {
 }
 
 // Add adds a link to db and returns assigned id
-func (r *InMemRepo) Add(url *model.URL) (bool, error) {
+func (r *InMemRepo) Add(url *model.URL, ctx context.Context) (bool, error) {
 	r.Lock()
 	defer r.Unlock()
 	if v, k := r.existingURLs[url.LongURL]; k {
@@ -50,7 +51,7 @@ func (r *InMemRepo) Add(url *model.URL) (bool, error) {
 	return false, nil
 }
 
-func (r *InMemRepo) AddBatch(urls map[string]*model.URL) (bool, error) {
+func (r *InMemRepo) AddBatch(urls map[string]*model.URL, ctx context.Context) (bool, error) {
 	r.Lock()
 	defer r.Unlock()
 	var duplicates bool
@@ -75,7 +76,7 @@ func (r *InMemRepo) NewID() (int, error) {
 	return r.lastID, nil
 }
 
-func (r *InMemRepo) GetByUser(userID string) ([]*model.URL, error) {
+func (r *InMemRepo) GetByUser(userID string, ctx context.Context) ([]*model.URL, error) {
 	r.RLock()
 	defer r.RUnlock()
 	urls := make([]*model.URL, 0)
@@ -86,11 +87,11 @@ func (r *InMemRepo) GetByUser(userID string) ([]*model.URL, error) {
 	return urls, nil
 }
 
-func (r *InMemRepo) Ping() error {
+func (r *InMemRepo) Ping(context.Context) error {
 	return nil
 }
 
-func (r *InMemRepo) DeleteRepo() error {
+func (r *InMemRepo) DeleteRepo(context.Context) error {
 	r.Lock()
 	defer r.Unlock()
 	r.urlsByShort = make(map[string]*model.URL)

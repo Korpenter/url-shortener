@@ -1,6 +1,7 @@
 package storage
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/Mldlr/url-shortener/internal/app/model"
@@ -29,7 +30,7 @@ func NewMockRepo() *mockRepo {
 	return &mock
 }
 
-func (r *mockRepo) Get(short string) (string, error) {
+func (r *mockRepo) Get(short string, ctx context.Context) (string, error) {
 	v, ok := r.urlsByShort[short]
 	if !ok {
 		return "", fmt.Errorf("invalid id: %s", short)
@@ -37,7 +38,7 @@ func (r *mockRepo) Get(short string) (string, error) {
 	return v.LongURL, nil
 }
 
-func (r *mockRepo) Add(url *model.URL) (bool, error) {
+func (r *mockRepo) Add(url *model.URL, ctx context.Context) (bool, error) {
 	if v, k := r.existingURLs[url.LongURL]; k {
 		url.ShortURL = v.ShortURL
 		return true, nil
@@ -48,7 +49,7 @@ func (r *mockRepo) Add(url *model.URL) (bool, error) {
 	return false, nil
 }
 
-func (r *mockRepo) AddBatch(urls map[string]*model.URL) (bool, error) {
+func (r *mockRepo) AddBatch(urls map[string]*model.URL, ctx context.Context) (bool, error) {
 	var duplicates bool
 	for _, v := range urls {
 		if i, k := r.existingURLs[v.LongURL]; k {
@@ -68,7 +69,7 @@ func (r *mockRepo) NewID() (int, error) {
 	return r.lastID, nil
 }
 
-func (r *mockRepo) GetByUser(userID string) ([]*model.URL, error) {
+func (r *mockRepo) GetByUser(userID string, ctx context.Context) ([]*model.URL, error) {
 	s := []*model.URL{}
 	s = append(s, r.urlsByUser[userID]...)
 	if len(s) == 0 {
@@ -77,11 +78,11 @@ func (r *mockRepo) GetByUser(userID string) ([]*model.URL, error) {
 	return s, nil
 }
 
-func (r *mockRepo) Ping() error {
+func (r *mockRepo) Ping(context.Context) error {
 	return nil
 }
 
-func (r *mockRepo) DeleteRepo() error {
+func (r *mockRepo) DeleteRepo(context.Context) error {
 	r.urlsByShort = make(map[string]*model.URL)
 	r.urlsByUser = make(map[string][]*model.URL)
 	return nil

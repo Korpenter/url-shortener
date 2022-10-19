@@ -37,7 +37,7 @@ func APIShorten(repo storage.Repository, c *config.Config) http.HandlerFunc {
 			http.Error(w, fmt.Sprintf("error getting user cookie: %v", err), http.StatusInternalServerError)
 		}
 		body.UserID = userID
-		duplicates, err := repo.Add(body)
+		duplicates, err := repo.Add(body, r.Context())
 		if err != nil {
 			http.Error(w, fmt.Sprintf("error adding record to db: %v", err), http.StatusInternalServerError)
 			return

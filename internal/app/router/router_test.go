@@ -2,6 +2,7 @@ package router
 
 import (
 	"compress/gzip"
+	"context"
 	"github.com/Mldlr/url-shortener/internal/app/config"
 	"github.com/Mldlr/url-shortener/internal/app/storage"
 	"github.com/stretchr/testify/assert"
@@ -44,7 +45,7 @@ func runRouterTest(t *testing.T, tests []test, db bool) {
 		}
 		mockRepo, err = storage.NewPostgresMockRepo(dbURL)
 		require.NoError(t, err)
-		defer mockRepo.DeleteRepo()
+		defer mockRepo.DeleteRepo(context.Background())
 	default:
 		mockRepo = storage.NewMockRepo()
 		prefix = "InMem repo: "

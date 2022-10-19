@@ -1,6 +1,7 @@
 package storage
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -54,7 +55,7 @@ func (r *FileRepo) Load() error {
 }
 
 // Get returns original link by id or an error if id is not present
-func (r *FileRepo) Get(short string) (string, error) {
+func (r *FileRepo) Get(short string, ctx context.Context) (string, error) {
 	r.Lock()
 	defer r.Unlock()
 	url, ok := r.cacheByShort[short]
@@ -65,7 +66,7 @@ func (r *FileRepo) Get(short string) (string, error) {
 }
 
 // Add adds a link to db and returns assigned id
-func (r *FileRepo) Add(url *model.URL) (bool, error) {
+func (r *FileRepo) Add(url *model.URL, ctx context.Context) (bool, error) {
 	r.Lock()
 	defer r.Unlock()
 	if v, k := r.existingURLs[url.LongURL]; k {
@@ -82,7 +83,7 @@ func (r *FileRepo) Add(url *model.URL) (bool, error) {
 	return false, nil
 }
 
-func (r *FileRepo) AddBatch(urls map[string]*model.URL) (bool, error) {
+func (r *FileRepo) AddBatch(urls map[string]*model.URL, ctx context.Context) (bool, error) {
 	r.Lock()
 	defer r.Unlock()
 	var duplicates bool
@@ -110,10 +111,10 @@ func (r *FileRepo) NewID() (int, error) {
 	return r.lastID, nil
 }
 
-func (r *FileRepo) GetByUser(userID string) ([]*model.URL, error) {
+func (r *FileRepo) GetByUser(userID string, ctx context.Context) ([]*model.URL, error) {
 	r.RLock()
 	defer r.RUnlock()
-	s := []*model.URL{}
+	var s []*model.URL
 	s = append(s, r.cacheByUser[userID]...)
 	if len(s) == 0 {
 		return nil, nil
@@ -121,12 +122,12 @@ func (r *FileRepo) GetByUser(userID string) ([]*model.URL, error) {
 	return s, nil
 }
 
-func (r *FileRepo) Ping() error {
+func (r *FileRepo) Ping(ctx context.Context) error {
 	_, err := os.Stat(r.file.Name())
 	return err
 }
 
-func (r *FileRepo) DeleteRepo() error {
+func (r *FileRepo) DeleteRepo(ctx context.Context) error {
 	err := r.file.Close()
 	if err != nil {
 		return fmt.Errorf("error closing file : %v", err)

@@ -46,7 +46,7 @@ func TestInMemRepo_Add(t *testing.T) {
 			id, _ := mock.NewID()
 			id62 := encoders.ToRBase62(id)
 			url := model.URL{ShortURL: id62, LongURL: tt.longURL, UserID: tt.userID}
-			_, _ = mock.Add(&url)
+			_, _ = mock.Add(&url, nil)
 			assert.Equal(t, tt.wantShort, url.ShortURL)
 			var urls []model.URL
 			for _, value := range mock.urlsByShort {
@@ -88,7 +88,7 @@ func TestInMemRepo_GetByShort(t *testing.T) {
 				urlsByShort: mock.urlsByShort,
 				urlsByUser:  mock.urlsByUser,
 			}
-			got, err := r.Get(tt.short)
+			got, err := r.Get(tt.short, nil)
 			if !tt.wantErr {
 				require.NoError(t, err)
 				assert.Equal(t, tt.want, got)
@@ -136,7 +136,7 @@ func TestInMemRepo_GetByUser(t *testing.T) {
 				urlsByShort: mock.urlsByShort,
 				urlsByUser:  mock.urlsByUser,
 			}
-			got, err := r.GetByUser(tt.userID)
+			got, err := r.GetByUser(tt.userID, nil)
 			if !tt.wantErr {
 				require.NoError(t, err)
 				assert.Equal(t, tt.want, got)

@@ -38,7 +38,7 @@ func Shorten(repo storage.Repository, c *config.Config) http.HandlerFunc {
 			http.Error(w, fmt.Sprintf("error getting user cookie: %v", err), http.StatusInternalServerError)
 		}
 		url := model.URL{ShortURL: id62, LongURL: long, UserID: userID}
-		duplicates, err := repo.Add(&url)
+		duplicates, err := repo.Add(&url, r.Context())
 		if err != nil {
 			http.Error(w, fmt.Sprintf("error adding record to db: %v", err), http.StatusInternalServerError)
 			return

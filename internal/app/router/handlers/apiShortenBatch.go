@@ -45,7 +45,7 @@ func APIShortenBatch(repo storage.Repository, c *config.Config) http.HandlerFunc
 				UserID:   userID,
 			}
 		}
-		duplicates, err := repo.AddBatch(urls)
+		duplicates, err := repo.AddBatch(urls, r.Context())
 		if err != nil {
 			http.Error(w, fmt.Sprintf("error adding record to db: %v", err), http.StatusInternalServerError)
 			return
