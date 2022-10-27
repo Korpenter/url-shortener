@@ -1,28 +1,36 @@
 package storage
 
 import (
+	"testing"
+
+	"github.com/Mldlr/url-shortener/internal/app/model"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"testing"
 )
 
 func TestFileRepo(t *testing.T) {
 	tests := []struct {
-		name string
-		urls []url
-		want map[string]string
+		name        string
+		urls        []model.URL
+		wantContain []model.URL
 	}{
 		{
 			name: "Load preexisting file, No addition",
-			want: map[string]string{"1": "yandex.ru", "2": "hero.ru"},
+			wantContain: []model.URL{
+				{ShortURL: "1", LongURL: "yandex.ru", UserID: "Helloworld"},
+				{ShortURL: "2", LongURL: "hero.ru", UserID: "Helloworld"},
+			},
 		},
 		{
 			name: " Add links and Load preexisting file.",
-			urls: []url{
-				{ID: "3", LongURL: "hell.ru"},
-				{ID: "4", LongURL: "nvidia.ru"},
+			urls: []model.URL{
+				{ShortURL: "3", LongURL: "hell.ru", UserID: "Anotherone"},
+				{ShortURL: "4", LongURL: "nvidia.ru", UserID: "Anotherone"},
 			},
-			want: map[string]string{"1": "yandex.ru", "2": "hero.ru", "3": "hell.ru", "4": "nvidia.ru"},
+			wantContain: []model.URL{
+				{ShortURL: "3", LongURL: "hell.ru", UserID: "Anotherone"},
+				{ShortURL: "4", LongURL: "nvidia.ru", UserID: "Anotherone"},
+			},
 		},
 	}
 
@@ -31,13 +39,20 @@ func TestFileRepo(t *testing.T) {
 			fRepo, err := newMockFileRepo()
 			require.NoError(t, err)
 			for _, v := range tt.urls {
-				_, err = fRepo.add(v.LongURL, v.ID)
+				_, err = fRepo.add(v.LongURL, v.ShortURL, v.UserID)
 				require.NoError(t, err)
 			}
 			err = fRepo.load()
 			require.NoError(t, err)
-			assert.Equal(t, tt.want, fRepo.cache)
-			err = fRepo.deleteMock()
+			var urls []model.URL
+			for _, value := range fRepo.cacheByShort {
+				urls = append(urls, *value)
+			}
+			for _, v := range tt.wantContain {
+				assert.Contains(t, urls, v)
+
+			}
+			err = fRepo.delete()
 			require.NoError(t, err)
 		})
 	}

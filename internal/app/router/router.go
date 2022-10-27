@@ -15,10 +15,14 @@ func NewRouter(repo storage.Repository, c *config.Config) chi.Router {
 	r.Use(chiMiddleware.Logger)
 	r.Use(chiMiddleware.Recoverer)
 	r.Use(middleware.Decompress)
+	r.Use(middleware.Auth{Config: c}.Authenticate)
 	r.Use(chiMiddleware.AllowContentEncoding("gzip"))
 	r.Use(chiMiddleware.Compress(5, "application/json", "text/plain"))
+	r.Get("/api/user/urls", handlers.APIUserExpand(repo, c))
 	r.Post("/api/shorten", handlers.APIShorten(repo, c))
+	r.Post("/api/shorten/batch", handlers.APIShortenBatch(repo, c))
 	r.Get("/{id}", handlers.Expand(repo))
+	r.Get("/ping", handlers.Ping(repo))
 	r.Post("/", handlers.Shorten(repo, c))
 	return r
 }

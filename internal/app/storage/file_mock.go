@@ -5,25 +5,30 @@ import (
 	"fmt"
 	"io"
 	"os"
+
+	"github.com/Mldlr/url-shortener/internal/app/model"
 )
 
-// MockFileRepo is a mock of a FileRepo
 type mockFileRepo struct {
-	file    *os.File
-	cache   map[string]string
-	encoder json.Encoder
+	file         *os.File
+	cacheByShort map[string]*model.URL
+	cacheByUser  map[string][]*model.URL
+	lastID       int
+	encoder      json.Encoder
 }
 
 // NewMockFileRepo itiates new mock file repo, creating a file and adding a record to it
 func newMockFileRepo() (*mockFileRepo, error) {
-	urls := []url{
+	urls := []model.URL{
 		{
-			ID:      "1",
-			LongURL: "yandex.ru",
+			ShortURL: "1",
+			LongURL:  "yandex.ru",
+			UserID:   "Helloworld",
 		},
 		{
-			ID:      "2",
-			LongURL: "hero.ru",
+			ShortURL: "2",
+			LongURL:  "hero.ru",
+			UserID:   "Helloworld",
 		},
 	}
 	file, err := os.OpenFile("./mockFileDB", os.O_RDWR|os.O_CREATE, 0666)
@@ -31,12 +36,13 @@ func newMockFileRepo() (*mockFileRepo, error) {
 		return nil, fmt.Errorf("error creating mock file : %v", err)
 	}
 	mock := mockFileRepo{
-		file:    file,
-		cache:   make(map[string]string),
-		encoder: *json.NewEncoder(file),
+		file:         file,
+		cacheByShort: make(map[string]*model.URL),
+		cacheByUser:  make(map[string][]*model.URL),
+		encoder:      *json.NewEncoder(file),
 	}
 	for _, v := range urls {
-		if _, err = mock.add(v.LongURL, v.ID); err != nil {
+		if _, err = mock.add(v.LongURL, v.ShortURL, v.UserID); err != nil {
 			return nil, fmt.Errorf("error adding mock records : %v", err)
 		}
 	}
@@ -44,7 +50,7 @@ func newMockFileRepo() (*mockFileRepo, error) {
 }
 
 // DeleteMock deletes mock file
-func (r *mockFileRepo) deleteMock() error {
+func (r *mockFileRepo) delete() error {
 	err := r.file.Close()
 	if err != nil {
 		return fmt.Errorf("error closing mock file : %v", err)
@@ -59,42 +65,68 @@ func (r *mockFileRepo) deleteMock() error {
 // Load loads stored url records from file
 func (r *mockFileRepo) load() error {
 	decoder := json.NewDecoder(r.file)
-	u := &url{}
+	u := &model.URL{}
 	for {
 		if err := decoder.Decode(u); err == io.EOF {
 			break
 		} else if err != nil {
 			return fmt.Errorf("error decoding file : %v", err)
 		}
-		r.cache[u.ID] = u.LongURL
+		url := &model.URL{ShortURL: u.ShortURL, LongURL: u.LongURL}
+		r.cacheByShort[u.ShortURL] = url
+		r.cacheByUser[u.UserID] = append(r.cacheByUser[u.UserID], url)
 	}
 	return nil
 }
 
 // Get returns original link by id or an error if id is not present
-func (r *mockFileRepo) get(id string) (string, error) {
-	longURL, ok := r.cache[id]
+func (r *mockFileRepo) get(short string) (string, error) {
+	url, ok := r.cacheByShort[short]
 	if !ok {
-		return "", fmt.Errorf("invalid id: %s", id)
+		return "", fmt.Errorf("invalid id: %s", short)
 	}
-	return longURL, nil
+	return url.LongURL, nil
 }
 
 // Add adds a link to db and returns assigned id
-func (r *mockFileRepo) add(longURL, id string) (string, error) {
-	r.cache[id] = longURL
-	url := url{
-		ID:      id,
-		LongURL: longURL,
-	}
-	err := r.encoder.Encode(url)
+func (r *mockFileRepo) add(longURL, short, userID string) (string, error) {
+	url := &model.URL{ShortURL: short, LongURL: longURL, UserID: userID}
+	r.cacheByShort[short] = url
+	r.cacheByUser[userID] = append(r.cacheByUser[userID], url)
+	err := r.encoder.Encode(*url)
 	if err != nil {
-		return id, err
+		return short, err
 	}
-	return id, nil
+	return short, nil
 }
 
-// NewID returns a number to encode as an id
-func (r *mockFileRepo) newID() (int, error) {
-	return len(r.cache) + 1, nil
+func (r *mockFileRepo) addBatch(urls []model.URL) error {
+	for _, v := range urls {
+		r.cacheByShort[v.ShortURL] = &v
+		r.cacheByUser[v.UserID] = append(r.cacheByUser[v.UserID], &v)
+		err := r.encoder.Encode(v)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (r *FileRepo) newID() (int, error) {
+	r.lastID++
+	return r.lastID, nil
+}
+
+func (r *mockFileRepo) getByUser(userID string) ([]*model.URL, error) {
+	urls := make([]*model.URL, 0)
+	urls = append(urls, r.cacheByUser[userID]...)
+	if len(urls) == 0 {
+		return nil, fmt.Errorf("no urls found for user")
+	}
+	return urls, nil
+}
+
+func (r *mockFileRepo) ping() error {
+	_, err := os.Stat(r.file.Name())
+	return err
 }
