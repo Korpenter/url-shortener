@@ -3,7 +3,9 @@ package storage
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/Mldlr/url-shortener/internal/app/utils/encoders"
 	"io"
+	"log"
 	"os"
 
 	"github.com/Mldlr/url-shortener/internal/app/model"
@@ -13,7 +15,6 @@ type mockFileRepo struct {
 	file         *os.File
 	cacheByShort map[string]*model.URL
 	cacheByUser  map[string][]*model.URL
-	lastID       int
 	encoder      json.Encoder
 }
 
@@ -80,12 +81,12 @@ func (r *mockFileRepo) load() error {
 }
 
 // Get returns original link by id or an error if id is not present
-func (r *mockFileRepo) get(short string) (string, error) {
+func (r *mockFileRepo) get(short string) (*model.URL, error) {
 	url, ok := r.cacheByShort[short]
 	if !ok {
-		return "", fmt.Errorf("invalid id: %s", short)
+		return nil, fmt.Errorf("invalid id: %s", short)
 	}
-	return url.LongURL, nil
+	return url, nil
 }
 
 // Add adds a link to db and returns assigned id
@@ -112,9 +113,27 @@ func (r *mockFileRepo) addBatch(urls []model.URL) error {
 	return nil
 }
 
-func (r *FileRepo) newID() (int, error) {
-	r.lastID++
-	return r.lastID, nil
+func (r *mockFileRepo) updateFile() {
+	log.Println("starting file update")
+	err := r.file.Truncate(0)
+	if err != nil {
+		log.Println("error truncating file:", err)
+	}
+	_, err = r.file.Seek(0, 0)
+	if err != nil {
+		log.Println("error setting pointer in file:", err)
+	}
+	for _, v := range r.cacheByShort {
+		err = r.encoder.Encode(&v)
+		if err != nil {
+			log.Println("error encoding url:", err)
+		}
+	}
+	log.Println("finished file update")
+}
+
+func (r *FileRepo) newID(url string) (string, error) {
+	return encoders.ToRBase62(url), nil
 }
 
 func (r *mockFileRepo) getByUser(userID string) ([]*model.URL, error) {

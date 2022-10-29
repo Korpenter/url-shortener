@@ -3,7 +3,9 @@ package storage
 import (
 	"context"
 	"fmt"
+	"github.com/go-co-op/gocron"
 	"log"
+	"time"
 
 	"github.com/Mldlr/url-shortener/internal/app/config"
 	"github.com/Mldlr/url-shortener/internal/app/model"
@@ -11,13 +13,14 @@ import (
 
 // Repository interface for storage instances
 type Repository interface {
-	Get(id string, ctx context.Context) (string, error)
-	GetByUser(userID string, ctx context.Context) ([]*model.URL, error)
-	Add(url *model.URL, ctx context.Context) (bool, error)
-	AddBatch(urls map[string]*model.URL, ctx context.Context) (bool, error)
-	NewID() (int, error)
+	Get(ctx context.Context, id string) (*model.URL, error)
+	GetByUser(ctx context.Context, userID string) ([]*model.URL, error)
+	Add(ctx context.Context, url *model.URL) (bool, error)
+	AddBatch(ctx context.Context, urls map[string]*model.URL) (bool, error)
+	NewID(url string) (string, error)
 	Ping(ctx context.Context) error
 	DeleteRepo(ctx context.Context) error
+	DeleteURLs(deleteURLs []*model.DeleteURLItem) (int, error)
 }
 
 func New(c *config.Config) Repository {
@@ -34,10 +37,6 @@ func New(c *config.Config) Repository {
 		if err != nil {
 			log.Fatal(fmt.Errorf("error pinging db : %v", err))
 		}
-		err = r.NumberOfURLs()
-		if err != nil {
-			log.Fatal(fmt.Errorf("error getting number of records : %v", err))
-		}
 		return r
 	}
 	if c.FileStorage != "" {
@@ -49,6 +48,11 @@ func New(c *config.Config) Repository {
 		if err != nil {
 			log.Fatal(fmt.Errorf("error loading json data from file : %v", err))
 		}
+		s := gocron.NewScheduler(time.UTC)
+		s.Every(1).Minutes().Do(func() {
+			r.updateFile()
+		})
+		s.StartAsync()
 		return r
 	}
 	return NewInMemRepo()
