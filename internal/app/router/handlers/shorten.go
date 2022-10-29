@@ -6,7 +6,6 @@ import (
 	"github.com/Mldlr/url-shortener/internal/app/model"
 	"github.com/Mldlr/url-shortener/internal/app/router/middleware"
 	"github.com/Mldlr/url-shortener/internal/app/storage"
-	"github.com/Mldlr/url-shortener/internal/app/utils/encoders"
 	"github.com/Mldlr/url-shortener/internal/app/utils/validators"
 	"io"
 	"log"
@@ -27,18 +26,18 @@ func Shorten(repo storage.Repository, c *config.Config) http.HandlerFunc {
 			http.Error(w, "invalid url", http.StatusBadRequest)
 			return
 		}
-		id, err := repo.NewID()
+		id, err := repo.NewID(long)
 		if err != nil {
 			http.Error(w, fmt.Sprintf("error getting new id: %v", err), http.StatusInternalServerError)
 			return
 		}
-		id62 := encoders.ToRBase62(id)
 		userID, found := middleware.GetUserID(r)
 		if !found {
 			http.Error(w, fmt.Sprintf("error getting user cookie: %v", err), http.StatusInternalServerError)
+			return
 		}
-		url := model.URL{ShortURL: id62, LongURL: long, UserID: userID}
-		duplicates, err := repo.Add(&url, r.Context())
+		url := model.URL{ShortURL: id, LongURL: long, UserID: userID, Deleted: false}
+		duplicates, err := repo.Add(r.Context(), &url)
 		if err != nil {
 			http.Error(w, fmt.Sprintf("error adding record to db: %v", err), http.StatusInternalServerError)
 			return

@@ -90,7 +90,7 @@ func TestPostApiCorrect(t *testing.T) {
 			want: want{
 				contentType: "application/json",
 				statusCode:  http.StatusCreated,
-				body:        `{"result":"http://localhost:8080/3"}` + "\n",
+				body:        `{"result":"http://localhost:8080/vRveliyDLz8"}` + "\n",
 				location:    "",
 			},
 		},
@@ -102,7 +102,7 @@ func TestPostApiCorrect(t *testing.T) {
 			want: want{
 				contentType: "application/json",
 				statusCode:  http.StatusCreated,
-				body:        `{"result":"http://localhost:8080/4"}` + "\n",
+				body:        `{"result":"http://localhost:8080/gjsBFlccqF6"}` + "\n",
 				location:    "",
 			},
 		},
@@ -152,7 +152,7 @@ func TestPostCorrect(t *testing.T) {
 			want: want{
 				contentType: "text/plain",
 				statusCode:  http.StatusCreated,
-				body:        "http://localhost:8080/3",
+				body:        "http://localhost:8080/vRveliyDLz8",
 				location:    "",
 			},
 		},
@@ -164,7 +164,7 @@ func TestPostCorrect(t *testing.T) {
 			want: want{
 				contentType: "text/plain",
 				statusCode:  http.StatusCreated,
-				body:        "http://localhost:8080/4",
+				body:        "http://localhost:8080/cXRXuMGP3pD",
 				location:    "",
 			},
 		},
@@ -265,7 +265,7 @@ func TestApiPostCompressed(t *testing.T) {
 			want: want{
 				contentType: "application/json",
 				statusCode:  http.StatusCreated,
-				body:        `{"result":"http://localhost:8080/3"}` + "\n",
+				body:        `{"result":"http://localhost:8080/vRveliyDLz8"}` + "\n",
 				location:    "",
 			},
 		},
@@ -298,7 +298,7 @@ func TestBatchCorrect(t *testing.T) {
 			want: want{
 				contentType: "application/json",
 				statusCode:  http.StatusCreated,
-				body:        `[{"correlation_id":"TestCorrelationID1","short_url":"http://localhost:8080/3"},{"correlation_id":"TestCorrelationID2","short_url":"http://localhost:8080/4"}]` + "\n",
+				body:        `[{"correlation_id":"TestCorrelationID1","short_url":"http://localhost:8080/vRveliyDLz8"},{"correlation_id":"TestCorrelationID2","short_url":"http://localhost:8080/BlbEuA4l5GJ"}]` + "\n",
 				location:    "",
 			},
 		},
@@ -337,7 +337,7 @@ func TestPostDuplicate(t *testing.T) {
 			want: want{
 				contentType: "text/plain",
 				statusCode:  http.StatusCreated,
-				body:        "http://localhost:8080/3",
+				body:        "http://localhost:8080/vRveliyDLz8",
 				location:    "",
 			},
 		},
@@ -349,7 +349,7 @@ func TestPostDuplicate(t *testing.T) {
 			want: want{
 				contentType: "text/plain",
 				statusCode:  http.StatusConflict,
-				body:        "http://localhost:8080/3",
+				body:        "http://localhost:8080/vRveliyDLz8",
 				location:    "",
 			},
 		},
@@ -361,7 +361,7 @@ func TestPostDuplicate(t *testing.T) {
 			want: want{
 				contentType: "text/plain",
 				statusCode:  http.StatusConflict,
-				body:        "http://localhost:8080/3",
+				body:        "http://localhost:8080/vRveliyDLz8",
 				location:    "",
 			},
 		},
@@ -381,7 +381,7 @@ func TestApiDuplicate(t *testing.T) {
 			want: want{
 				contentType: "application/json",
 				statusCode:  http.StatusCreated,
-				body:        `{"result":"http://localhost:8080/3"}` + "\n",
+				body:        `{"result":"http://localhost:8080/vRveliyDLz8"}` + "\n",
 				location:    "",
 			},
 		},
@@ -394,7 +394,7 @@ func TestApiDuplicate(t *testing.T) {
 			want: want{
 				contentType: "application/json",
 				statusCode:  http.StatusConflict,
-				body:        `{"result":"http://localhost:8080/3"}` + "\n",
+				body:        `{"result":"http://localhost:8080/vRveliyDLz8"}` + "\n",
 				location:    "",
 			},
 		},
@@ -407,7 +407,7 @@ func TestApiDuplicate(t *testing.T) {
 			want: want{
 				contentType: "application/json",
 				statusCode:  http.StatusConflict,
-				body:        `{"result":"http://localhost:8080/3"}` + "\n",
+				body:        `{"result":"http://localhost:8080/vRveliyDLz8"}` + "\n",
 				location:    "",
 			},
 		},
@@ -427,7 +427,7 @@ func TestApiBatchDuplicate(t *testing.T) {
 			want: want{
 				contentType: "application/json",
 				statusCode:  http.StatusConflict,
-				body:        `[{"correlation_id":"TestCorrelationID1","short_url":"http://localhost:8080/3"},{"correlation_id":"TestCorrelationID2","short_url":"http://localhost:8080/3"}]` + "\n",
+				body:        `[{"correlation_id":"TestCorrelationID1","short_url":"http://localhost:8080/vRveliyDLz8"},{"correlation_id":"TestCorrelationID2","short_url":"http://localhost:8080/vRveliyDLz8"}]` + "\n",
 				location:    "",
 			},
 		},
