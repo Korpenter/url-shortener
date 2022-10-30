@@ -381,7 +381,6 @@ func TestApiDuplicate(t *testing.T) {
 			want: want{
 				contentType: "application/json",
 				statusCode:  http.StatusCreated,
-
 				body:        `{"result":"http://localhost:8080/vRveliyDLz8"}` + "\n",
 				location:    "",
 			},

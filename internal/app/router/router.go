@@ -10,12 +10,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	chiMiddleware "github.com/go-chi/chi/v5/middleware"
 	"time"
-	//"golang.org/x/sync/errgroup"
 )
-
-type Deleter interface {
-	DeleteURLs()
-}
 
 // NewRouter returns a chi router instance.
 func NewRouter(repo storage.Repository, c *config.Config) chi.Router {
