@@ -13,10 +13,6 @@ import (
 	//"golang.org/x/sync/errgroup"
 )
 
-type Deleter interface {
-	DeleteURLs()
-}
-
 // NewRouter returns a chi router instance.
 func NewRouter(repo storage.Repository, c *config.Config) chi.Router {
 
