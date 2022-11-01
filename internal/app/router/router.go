@@ -18,7 +18,7 @@ func NewRouter(repo storage.Repository, c *config.Config) chi.Router {
 
 	deleteLoaderCfg := loader.UserLoaderConfig{
 		MaxBatch: 200,
-		Wait:     1 * time.Minute,
+		Wait:     5 * time.Second,
 		Fetch: func(keys []*model.DeleteURLItem) ([]int, []error) {
 			n, err := repo.DeleteURLs(keys)
 			if err != nil {
