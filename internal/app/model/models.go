@@ -1,10 +1,10 @@
 package model
 
-// URL represents url record
 type URL struct {
 	ShortURL string `json:"short_url"`
 	LongURL  string `json:"url"`
 	UserID   string `json:"user_id"`
+	Deleted  bool   `json:"deleted"`
 }
 
 type Response struct {
@@ -14,6 +14,11 @@ type Response struct {
 type URLItem struct {
 	ShortURL    string `json:"short_url"`
 	OriginalURL string `json:"original_url"`
+}
+
+type DeleteURLItem struct {
+	UserID   string `json:"user_id"`
+	ShortURL string `json:"short_url"`
 }
 
 type BatchReqItem struct {

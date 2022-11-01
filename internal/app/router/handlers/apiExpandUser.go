@@ -16,7 +16,7 @@ func APIUserExpand(repo storage.Repository, c *config.Config) http.HandlerFunc {
 		userID, found := middleware.GetUserID(r)
 		switch found {
 		case true:
-			urls, err := repo.GetByUser(userID, r.Context())
+			urls, err := repo.GetByUser(r.Context(), userID)
 			if err != nil {
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 				return
