@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/Mldlr/url-shortener/internal/app/model"
 	"github.com/Mldlr/url-shortener/internal/app/utils/encoders"
+	"github.com/Mldlr/url-shortener/internal/app/utils/helpers"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"sync"
@@ -74,23 +75,17 @@ func (r *PostgresRepo) Add(ctx context.Context, url *model.URL) (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	defer func() {
-		if err != nil {
-			tx.Rollback(ctx)
-		} else {
-			tx.Commit(ctx)
-		}
-	}()
+	defer helpers.CommitTx(ctx, tx, err)
 	err = tx.QueryRow(ctx, addQuery, url.ShortURL, url.LongURL, url.UserID).Scan(&url.ShortURL)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			duplicates = true
 			err = tx.QueryRow(ctx, getShort, url.LongURL).Scan(&url.ShortURL)
-		} else if err != nil {
+		} else {
 			return false, err
 		}
 	}
-	return duplicates, nil
+	return duplicates, err
 }
 
 func (r *PostgresRepo) AddBatch(ctx context.Context, urls map[string]*model.URL) (bool, error) {
@@ -99,13 +94,7 @@ func (r *PostgresRepo) AddBatch(ctx context.Context, urls map[string]*model.URL)
 	if err != nil {
 		return false, err
 	}
-	defer func() {
-		if err != nil {
-			tx.Rollback(ctx)
-		} else {
-			tx.Commit(ctx)
-		}
-	}()
+	defer helpers.CommitTx(ctx, tx, err)
 	for _, v := range urls {
 		err = tx.QueryRow(ctx, addQuery, v.ShortURL, v.LongURL, v.UserID).Scan(&v.ShortURL)
 		if err != nil {

@@ -15,6 +15,7 @@ const (
             	short varchar(255) PRIMARY KEY,
                 original varchar(255),
     			userid varchar(64),
+    			deleted boolean DEFAULT false,
     			UNIQUE(original)
                 )`
 	mockAddQuery = `
@@ -22,8 +23,8 @@ const (
 	VALUES ($1, $2, $3)
 	ON CONFLICT DO NOTHING
 	RETURNING short`
-	mockDeleteQuery    = `UPDATE urls_test SET deleted=TRUE WHERE short=$1`
-	mockGetQuery       = `SELECT original FROM urls_test WHERE short = $1`
+	mockDeleteQuery    = `UPDATE urls_test SET deleted=TRUE WHERE (short, userid) IN `
+	mockGetQuery       = `SELECT original, deleted FROM urls_test WHERE short = $1`
 	mockGetByUserQuery = `SELECT * FROM urls_test WHERE userid = $1`
 	mockGetShort       = `SELECT short FROM urls_test WHERE original = $1`
 	mockDrop           = `DROP TABLE urls_test`
@@ -57,12 +58,12 @@ func NewPostgresMockRepo(connString string) (*PostgresMockRepo, error) {
 }
 
 func (r *PostgresMockRepo) Get(ctx context.Context, id string) (*model.URL, error) {
-	var url *model.URL
-	err := r.conn.QueryRow(ctx, mockGetQuery, id).Scan(&url)
+	var url model.URL
+	err := r.conn.QueryRow(ctx, mockGetQuery, id).Scan(&url.LongURL, &url.Deleted)
 	if err != nil {
 		return nil, fmt.Errorf("invalid id: %v", id)
 	}
-	return url, nil
+	return &url, nil
 }
 
 func (r *PostgresMockRepo) GetByUser(ctx context.Context, userID string) ([]*model.URL, error) {
@@ -91,13 +92,23 @@ func (r *PostgresMockRepo) GetByUser(ctx context.Context, userID string) ([]*mod
 
 func (r *PostgresMockRepo) Add(ctx context.Context, url *model.URL) (bool, error) {
 	var duplicates bool
-	err := r.conn.QueryRow(ctx, mockAddQuery, url.ShortURL, url.LongURL, url.UserID).Scan(&url.ShortURL)
+	tx, err := r.conn.Begin(ctx)
+	if err != nil {
+		return false, err
+	}
+	defer func() {
+		if err != nil {
+			tx.Rollback(ctx)
+		} else {
+			tx.Commit(ctx)
+		}
+	}()
+	err = tx.QueryRow(ctx, mockAddQuery, url.ShortURL, url.LongURL, url.UserID).Scan(&url.ShortURL)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			duplicates = true
-			err = r.conn.QueryRow(ctx, mockGetShort, url.LongURL).Scan(&url.ShortURL)
-		}
-		if err != nil {
+			err = tx.QueryRow(ctx, mockGetShort, url.LongURL).Scan(&url.ShortURL)
+		} else if err != nil {
 			return false, err
 		}
 	}
@@ -110,6 +121,13 @@ func (r *PostgresMockRepo) AddBatch(ctx context.Context, urls map[string]*model.
 	if err != nil {
 		return false, err
 	}
+	defer func() {
+		if err != nil {
+			tx.Rollback(ctx)
+		} else {
+			tx.Commit(ctx)
+		}
+	}()
 	for _, v := range urls {
 		err = tx.QueryRow(ctx, mockAddQuery, v.ShortURL, v.LongURL, v.UserID).Scan(&v.ShortURL)
 		if err != nil {
@@ -117,15 +135,7 @@ func (r *PostgresMockRepo) AddBatch(ctx context.Context, urls map[string]*model.
 				duplicates = true
 				err = tx.QueryRow(ctx, mockGetShort, v.LongURL).Scan(&v.ShortURL)
 			}
-			if err != nil {
-				if err = tx.Rollback(ctx); err != nil {
-					return false, err
-				}
-			}
 		}
-	}
-	if err = tx.Commit(ctx); err != nil {
-		return false, err
 	}
 	return duplicates, nil
 }
@@ -148,12 +158,17 @@ func (r *PostgresMockRepo) DeleteURLs(deleteURLs []*model.DeleteURLItem) (int, e
 			tx.Commit(ctx)
 		}
 	}()
+	var args string
 	for _, v := range deleteURLs {
-		_, err = tx.Exec(ctx, mockDeleteQuery, v.ShortURL, v.UserID)
-		if err != nil {
-			return n, err
-		}
+		args += fmt.Sprintf("('%s','%s'),", v.ShortURL, v.UserID)
 	}
+	args = args[:len(args)-1]
+	query := mockDeleteQuery + `(` + args + `)`
+	res, err := tx.Exec(ctx, query)
+	if err != nil {
+		return n, err
+	}
+	n = int(res.RowsAffected())
 	return n, err
 }
 
