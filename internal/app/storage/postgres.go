@@ -60,7 +60,7 @@ func (r *PostgresRepo) GetByUser(ctx context.Context, userID string) ([]*model.U
 	}
 	defer rows.Close()
 	for rows.Next() {
-		err = rows.Scan(&url.ShortURL, &url.LongURL, &url.UserID)
+		err = rows.Scan(&url.ShortURL, &url.LongURL, &url.UserID, &url.Deleted)
 		if err != nil {
 			return nil, err
 		}
@@ -114,13 +114,7 @@ func (r *PostgresRepo) DeleteURLs(deleteURLs []*model.DeleteURLItem) (int, error
 	if err != nil {
 		return n, err
 	}
-	defer func() {
-		if err != nil {
-			tx.Rollback(ctx)
-		} else {
-			tx.Commit(ctx)
-		}
-	}()
+	defer helpers.CommitTx(ctx, tx, err)
 	var args string
 	for _, v := range deleteURLs {
 		args += fmt.Sprintf("('%s','%s'),", v.ShortURL, v.UserID)

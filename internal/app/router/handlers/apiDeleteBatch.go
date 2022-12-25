@@ -38,7 +38,11 @@ func APIDeleteBatch(loader *loader.UserLoader) http.HandlerFunc {
 			if err[0] != nil {
 				log.Printf("error deleing urls :%v", err[0])
 			}
-			log.Printf("deleted %v urls", num[0])
+			var result int
+			for _, v := range num {
+				result += v
+			}
+			log.Printf("deleted %v urls", result)
 		}()
 		w.WriteHeader(http.StatusAccepted)
 	}

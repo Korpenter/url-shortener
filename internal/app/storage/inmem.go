@@ -89,7 +89,7 @@ func (r *InMemRepo) DeleteURLs(deleteURLs []*model.DeleteURLItem) (int, error) {
 	defer r.Unlock()
 	var n int
 	for _, v := range deleteURLs {
-		if r.urlsByShort[v.ShortURL].UserID == v.UserID {
+		if _, ok := r.urlsByShort[v.ShortURL]; ok && r.urlsByShort[v.ShortURL].UserID == v.UserID {
 			r.urlsByShort[v.ShortURL].Deleted = true
 			n++
 		}
