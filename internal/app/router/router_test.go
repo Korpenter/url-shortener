@@ -40,6 +40,9 @@ func runRouterTest(t *testing.T, tests []test, db bool) {
 	case db:
 		prefix = "Postgres repo: "
 		dbURL := os.Getenv("DATABASE_DSN")
+		if dbURL == "" {
+			return
+		}
 		mockRepo, err = storage.NewPostgresMockRepo(dbURL)
 		require.NoError(t, err)
 		defer mockRepo.DeleteRepo(context.Background())
