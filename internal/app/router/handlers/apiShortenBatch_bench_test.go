@@ -24,7 +24,7 @@ func BenchmarkAPIShortenBatch(b *testing.B) {
 	require.NoError(b, err)
 
 	handler := APIShortenBatch(repo, cfg)
-	ShortenItems := make([]model.BatchReqItem, 0, 1000)
+	ShortenItems := make([]model.BatchReqItem, 0, 10000)
 	for i := 0; i < cap(ShortenItems); i++ {
 		ShortenItems = append(ShortenItems, model.BatchReqItem{CorID: fmt.Sprint(i), OrigURL: uuid.NewString() + ".ru"})
 	}
