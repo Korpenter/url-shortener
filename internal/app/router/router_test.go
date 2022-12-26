@@ -32,7 +32,7 @@ type test struct {
 }
 
 func runRouterTest(t *testing.T, tests []test, db bool) {
-	cfg := &config.Config{ServerAddress: "localhost:8080", BaseURL: "http://localhost:8080"}
+	cfg := &config.Config{ServerAddress: "localhost:8080", BaseURL: "http://localhost:8080/"}
 	var mockRepo storage.Repository
 	var prefix string
 	var err error

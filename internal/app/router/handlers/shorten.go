@@ -3,13 +3,14 @@ package handlers
 import (
 	"fmt"
 	"github.com/Mldlr/url-shortener/internal/app/config"
-	"github.com/Mldlr/url-shortener/internal/app/model"
+	"github.com/Mldlr/url-shortener/internal/app/models"
 	"github.com/Mldlr/url-shortener/internal/app/router/middleware"
 	"github.com/Mldlr/url-shortener/internal/app/storage"
 	"github.com/Mldlr/url-shortener/internal/app/utils/validators"
 	"io"
 	"log"
 	"net/http"
+	"strings"
 )
 
 // Shorten returns a handler that shortens links and adds them to db
@@ -36,7 +37,7 @@ func Shorten(repo storage.Repository, c *config.Config) http.HandlerFunc {
 			http.Error(w, fmt.Sprintf("error getting user cookie: %v", err), http.StatusInternalServerError)
 			return
 		}
-		url := model.URL{ShortURL: id, LongURL: long, UserID: userID, Deleted: false}
+		url := models.URL{ShortURL: id, LongURL: long, UserID: userID, Deleted: false}
 		duplicates, err := repo.Add(r.Context(), &url)
 		if err != nil {
 			http.Error(w, fmt.Sprintf("error adding record to db: %v", err), http.StatusInternalServerError)
@@ -48,7 +49,7 @@ func Shorten(repo storage.Repository, c *config.Config) http.HandlerFunc {
 		} else {
 			w.WriteHeader(http.StatusCreated)
 		}
-		if _, err = io.WriteString(w, c.BaseURL+"/"+url.ShortURL); err != nil {
+		if _, err = io.WriteString(w, strings.Join([]string{c.BaseURL, url.ShortURL}, "")); err != nil {
 			log.Println(err)
 		}
 	}

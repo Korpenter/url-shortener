@@ -13,9 +13,10 @@ const (
 	VALUES ($1, $2, $3)
 	ON CONFLICT DO NOTHING
 	RETURNING short`
-	updateDeleteQuery = `UPDATE urls SET deleted=TRUE WHERE (short, userid) IN `
+	updateDeleteQuery = `DELETE FROM urls WHERE short IN (SELECT unnest($1::text[])) AND userid = $2`
 	getQuery          = `SELECT original, deleted FROM urls WHERE short = $1`
 	getByUserQuery    = `SELECT * FROM urls WHERE userid = $1`
 	getShort          = `SELECT short FROM urls WHERE original = $1`
+	countUserURLs     = "SELECT count(*) FROM urls WHERE userid = $1"
 	drop              = `DROP TABLE urls`
 )

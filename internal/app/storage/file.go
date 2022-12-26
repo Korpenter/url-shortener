@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/Mldlr/url-shortener/internal/app/model"
+	"github.com/Mldlr/url-shortener/internal/app/models"
 	"github.com/Mldlr/url-shortener/internal/app/utils/encoders"
 	"io"
 	"log"
@@ -15,9 +15,9 @@ import (
 // FileRepo is an in-file url storage
 type FileRepo struct {
 	file         *os.File
-	cacheByShort map[string]*model.URL
-	cacheByUser  map[string][]*model.URL
-	existingURLs map[string]*model.URL
+	cacheByShort map[string]*models.URL
+	cacheByUser  map[string][]*models.URL
+	existingURLs map[string]*models.URL
 	encoder      json.Encoder
 	sync.RWMutex
 }
@@ -30,9 +30,9 @@ func NewFileRepo(filename string) (*FileRepo, error) {
 	}
 	return &FileRepo{
 		file:         file,
-		cacheByShort: make(map[string]*model.URL),
-		cacheByUser:  make(map[string][]*model.URL),
-		existingURLs: make(map[string]*model.URL),
+		cacheByShort: make(map[string]*models.URL),
+		cacheByUser:  make(map[string][]*models.URL),
+		existingURLs: make(map[string]*models.URL),
 		encoder:      *json.NewEncoder(file),
 	}, nil
 }
@@ -40,14 +40,14 @@ func NewFileRepo(filename string) (*FileRepo, error) {
 // Load loads stored url records from file
 func (r *FileRepo) Load() error {
 	decoder := json.NewDecoder(r.file)
-	u := &model.URL{}
+	u := &models.URL{}
 	for {
 		if err := decoder.Decode(u); err == io.EOF {
 			break
 		} else if err != nil {
 			return fmt.Errorf("error decoding file : %v", err)
 		}
-		url := &model.URL{ShortURL: u.ShortURL, LongURL: u.LongURL}
+		url := &models.URL{ShortURL: u.ShortURL, LongURL: u.LongURL}
 		r.cacheByShort[u.ShortURL] = url
 		r.cacheByUser[u.UserID] = append(r.cacheByUser[u.UserID], url)
 	}
@@ -55,7 +55,7 @@ func (r *FileRepo) Load() error {
 }
 
 // Get returns original link by id or an error if id is not present
-func (r *FileRepo) Get(ctx context.Context, id string) (*model.URL, error) {
+func (r *FileRepo) Get(ctx context.Context, id string) (*models.URL, error) {
 	r.Lock()
 	defer r.Unlock()
 	url, ok := r.cacheByShort[id]
@@ -66,7 +66,7 @@ func (r *FileRepo) Get(ctx context.Context, id string) (*model.URL, error) {
 }
 
 // Add adds a link to db and returns assigned id
-func (r *FileRepo) Add(ctx context.Context, url *model.URL) (bool, error) {
+func (r *FileRepo) Add(ctx context.Context, url *models.URL) (bool, error) {
 	r.Lock()
 	defer r.Unlock()
 	if v, k := r.existingURLs[url.LongURL]; k {
@@ -79,7 +79,7 @@ func (r *FileRepo) Add(ctx context.Context, url *model.URL) (bool, error) {
 	return false, nil
 }
 
-func (r *FileRepo) AddBatch(ctx context.Context, urls map[string]*model.URL) (bool, error) {
+func (r *FileRepo) AddBatch(ctx context.Context, urls map[string]*models.URL) (bool, error) {
 	r.Lock()
 	defer r.Unlock()
 	var duplicates bool
@@ -100,10 +100,10 @@ func (r *FileRepo) NewID(url string) (string, error) {
 	return encoders.ToRBase62(url), nil
 }
 
-func (r *FileRepo) GetByUser(ctx context.Context, userID string) ([]*model.URL, error) {
+func (r *FileRepo) GetByUser(ctx context.Context, userID string) ([]*models.URL, error) {
 	r.RLock()
 	defer r.RUnlock()
-	var s []*model.URL
+	var s []*models.URL
 	s = append(s, r.cacheByUser[userID]...)
 	if len(s) == 0 {
 		return nil, nil
@@ -111,7 +111,7 @@ func (r *FileRepo) GetByUser(ctx context.Context, userID string) ([]*model.URL, 
 	return s, nil
 }
 
-func (r *FileRepo) DeleteURLs(deleteURLs []*model.DeleteURLItem) (int, error) {
+func (r *FileRepo) DeleteURLs(deleteURLs []*models.DeleteURLItem) (int, error) {
 	r.Lock()
 	defer r.Unlock()
 	var n int

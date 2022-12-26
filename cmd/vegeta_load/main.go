@@ -113,7 +113,7 @@ func main() {
 	for res := range attacker.Attack(targeterExpand, rateGetOne, duration, "Expand") {
 		metrics.Add(res)
 	}
-	for res := range attacker.Attack(targeterExpandUser, rateP, duration, "Expand user api") {
+	for res := range attacker.Attack(targeterExpandUser, rateP, duration/4, "Expand user api") {
 		metrics.Add(res)
 	}
 	for res := range attacker.Attack(targeterDeleteBatch, rateP, duration, "Batch delete api") {

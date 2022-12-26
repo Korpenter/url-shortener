@@ -6,7 +6,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"testing"
 
-	"github.com/Mldlr/url-shortener/internal/app/model"
+	"github.com/Mldlr/url-shortener/internal/app/models"
 )
 
 func TestInMemRepo_Add(t *testing.T) {
@@ -15,14 +15,14 @@ func TestInMemRepo_Add(t *testing.T) {
 		longURL     string
 		userID      string
 		wantShort   string
-		wantContain model.URL
+		wantContain models.URL
 	}{
 		{
 			name:      "Successfully added link",
 			longURL:   "https://github.com/",
 			userID:    "KS097f1lS&F",
 			wantShort: "vRveliyDLz8",
-			wantContain: model.URL{
+			wantContain: models.URL{
 				ShortURL: "vRveliyDLz8",
 				LongURL:  "https://github.com/",
 				UserID:   "KS097f1lS&F",
@@ -33,7 +33,7 @@ func TestInMemRepo_Add(t *testing.T) {
 			longURL:   "https://github.com/1234",
 			userID:    "KS097f1lS&F",
 			wantShort: "7xhhSdE3RuA",
-			wantContain: model.URL{
+			wantContain: models.URL{
 				ShortURL: "7xhhSdE3RuA",
 				LongURL:  "https://github.com/1234",
 				UserID:   "KS097f1lS&F",
@@ -44,10 +44,10 @@ func TestInMemRepo_Add(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			id, _ := mock.NewID(tt.longURL)
-			url := model.URL{ShortURL: id, LongURL: tt.longURL, UserID: tt.userID}
+			url := models.URL{ShortURL: id, LongURL: tt.longURL, UserID: tt.userID}
 			_, _ = mock.Add(context.Background(), &url)
 			assert.Equal(t, tt.wantShort, url.ShortURL)
-			var urls []model.URL
+			var urls []models.URL
 			for _, value := range mock.urlsByShort {
 				urls = append(urls, *value)
 			}
@@ -64,13 +64,13 @@ func TestInMemRepo_GetByShort(t *testing.T) {
 	tests := []struct {
 		name    string
 		short   string
-		want    *model.URL
+		want    *models.URL
 		wantErr bool
 	}{
 		{
 			name:    "Id in repo",
 			short:   "2",
-			want:    &model.URL{ShortURL: "2", LongURL: "https://yandex.ru/", UserID: "", Deleted: false},
+			want:    &models.URL{ShortURL: "2", LongURL: "https://yandex.ru/", UserID: "", Deleted: false},
 			wantErr: false,
 		},
 		{
@@ -102,13 +102,13 @@ func TestInMemRepo_GetByUser(t *testing.T) {
 	tests := []struct {
 		name    string
 		userID  string
-		want    []*model.URL
+		want    []*models.URL
 		wantErr bool
 	}{
 		{
 			name:   "User has 2 urls",
 			userID: "KS097f1lS&F",
-			want: []*model.URL{
+			want: []*models.URL{
 				{
 					ShortURL: "1",
 					LongURL:  "https://github.com/Mldlr/url-shortener/internal/app/utils/encoders",

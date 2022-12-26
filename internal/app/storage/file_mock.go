@@ -8,19 +8,19 @@ import (
 	"log"
 	"os"
 
-	"github.com/Mldlr/url-shortener/internal/app/model"
+	"github.com/Mldlr/url-shortener/internal/app/models"
 )
 
 type mockFileRepo struct {
 	file         *os.File
-	cacheByShort map[string]*model.URL
-	cacheByUser  map[string][]*model.URL
+	cacheByShort map[string]*models.URL
+	cacheByUser  map[string][]*models.URL
 	encoder      json.Encoder
 }
 
 // NewMockFileRepo itiates new mock file repo, creating a file and adding a record to it
 func newMockFileRepo() (*mockFileRepo, error) {
-	urls := []model.URL{
+	urls := []models.URL{
 		{
 			ShortURL: "1",
 			LongURL:  "yandex.ru",
@@ -38,8 +38,8 @@ func newMockFileRepo() (*mockFileRepo, error) {
 	}
 	mock := mockFileRepo{
 		file:         file,
-		cacheByShort: make(map[string]*model.URL),
-		cacheByUser:  make(map[string][]*model.URL),
+		cacheByShort: make(map[string]*models.URL),
+		cacheByUser:  make(map[string][]*models.URL),
 		encoder:      *json.NewEncoder(file),
 	}
 	for _, v := range urls {
@@ -66,14 +66,14 @@ func (r *mockFileRepo) delete() error {
 // Load loads stored url records from file
 func (r *mockFileRepo) load() error {
 	decoder := json.NewDecoder(r.file)
-	u := &model.URL{}
+	u := &models.URL{}
 	for {
 		if err := decoder.Decode(u); err == io.EOF {
 			break
 		} else if err != nil {
 			return fmt.Errorf("error decoding file : %v", err)
 		}
-		url := &model.URL{ShortURL: u.ShortURL, LongURL: u.LongURL}
+		url := &models.URL{ShortURL: u.ShortURL, LongURL: u.LongURL}
 		r.cacheByShort[u.ShortURL] = url
 		r.cacheByUser[u.UserID] = append(r.cacheByUser[u.UserID], url)
 	}
@@ -81,7 +81,7 @@ func (r *mockFileRepo) load() error {
 }
 
 // Get returns original link by id or an error if id is not present
-func (r *mockFileRepo) get(short string) (*model.URL, error) {
+func (r *mockFileRepo) get(short string) (*models.URL, error) {
 	url, ok := r.cacheByShort[short]
 	if !ok {
 		return nil, fmt.Errorf("invalid id: %s", short)
@@ -91,7 +91,7 @@ func (r *mockFileRepo) get(short string) (*model.URL, error) {
 
 // Add adds a link to db and returns assigned id
 func (r *mockFileRepo) add(longURL, short, userID string) (string, error) {
-	url := &model.URL{ShortURL: short, LongURL: longURL, UserID: userID}
+	url := &models.URL{ShortURL: short, LongURL: longURL, UserID: userID}
 	r.cacheByShort[short] = url
 	r.cacheByUser[userID] = append(r.cacheByUser[userID], url)
 	err := r.encoder.Encode(*url)
@@ -101,7 +101,7 @@ func (r *mockFileRepo) add(longURL, short, userID string) (string, error) {
 	return short, nil
 }
 
-func (r *mockFileRepo) addBatch(urls []model.URL) error {
+func (r *mockFileRepo) addBatch(urls []models.URL) error {
 	for _, v := range urls {
 		r.cacheByShort[v.ShortURL] = &v
 		r.cacheByUser[v.UserID] = append(r.cacheByUser[v.UserID], &v)
@@ -136,8 +136,8 @@ func (r *FileRepo) newID(url string) (string, error) {
 	return encoders.ToRBase62(url), nil
 }
 
-func (r *mockFileRepo) getByUser(userID string) ([]*model.URL, error) {
-	urls := make([]*model.URL, 0)
+func (r *mockFileRepo) getByUser(userID string) ([]*models.URL, error) {
+	urls := make([]*models.URL, 0)
 	urls = append(urls, r.cacheByUser[userID]...)
 	if len(urls) == 0 {
 		return nil, fmt.Errorf("no urls found for user")

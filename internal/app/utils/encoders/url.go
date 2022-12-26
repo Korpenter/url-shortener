@@ -17,6 +17,7 @@ func ToRBase62(url string) string {
 	sha.Write([]byte(url))
 	num := new(big.Int).SetBytes(sha.Sum(nil)).Uint64()
 	var b strings.Builder
+	b.Grow(64)
 	for num > 0 {
 		r := num % base
 		num /= base

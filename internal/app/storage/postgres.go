@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/Mldlr/url-shortener/internal/app/model"
+	"github.com/Mldlr/url-shortener/internal/app/models"
 	"github.com/Mldlr/url-shortener/internal/app/utils/encoders"
 	"github.com/Mldlr/url-shortener/internal/app/utils/helpers"
 	"github.com/jackc/pgx/v5"
@@ -39,8 +39,8 @@ func (r *PostgresRepo) NewTableURLs() error {
 	return nil
 }
 
-func (r *PostgresRepo) Get(ctx context.Context, id string) (*model.URL, error) {
-	var url model.URL
+func (r *PostgresRepo) Get(ctx context.Context, id string) (*models.URL, error) {
+	var url models.URL
 	err := r.conn.QueryRow(ctx, getQuery, id).Scan(&url.LongURL, &url.Deleted)
 	if err != nil {
 		return nil, fmt.Errorf("invalid id: %v", id)
@@ -48,9 +48,14 @@ func (r *PostgresRepo) Get(ctx context.Context, id string) (*model.URL, error) {
 	return &url, nil
 }
 
-func (r *PostgresRepo) GetByUser(ctx context.Context, userID string) ([]*model.URL, error) {
-	var url model.URL
-	urls := make([]*model.URL, 0)
+func (r *PostgresRepo) GetByUser(ctx context.Context, userID string) ([]*models.URL, error) {
+	var url models.URL
+	var count int
+	err := r.conn.QueryRow(ctx, countUserURLs, userID).Scan(&count)
+	if err != nil {
+		return nil, err
+	}
+	urls := make([]*models.URL, 0, count)
 	rows, err := r.conn.Query(ctx, getByUserQuery, userID)
 	if err != nil {
 		return nil, err
@@ -69,7 +74,7 @@ func (r *PostgresRepo) GetByUser(ctx context.Context, userID string) ([]*model.U
 	return urls, nil
 }
 
-func (r *PostgresRepo) Add(ctx context.Context, url *model.URL) (bool, error) {
+func (r *PostgresRepo) Add(ctx context.Context, url *models.URL) (bool, error) {
 	var duplicates bool
 	tx, err := r.conn.Begin(ctx)
 	if err != nil {
@@ -88,7 +93,7 @@ func (r *PostgresRepo) Add(ctx context.Context, url *model.URL) (bool, error) {
 	return duplicates, err
 }
 
-func (r *PostgresRepo) AddBatch(ctx context.Context, urls map[string]*model.URL) (bool, error) {
+func (r *PostgresRepo) AddBatch(ctx context.Context, urls map[string]*models.URL) (bool, error) {
 	var duplicates bool
 	tx, err := r.conn.Begin(ctx)
 	if err != nil {
@@ -107,7 +112,7 @@ func (r *PostgresRepo) AddBatch(ctx context.Context, urls map[string]*model.URL)
 	return duplicates, err
 }
 
-func (r *PostgresRepo) DeleteURLs(deleteURLs []*model.DeleteURLItem) (int, error) {
+func (r *PostgresRepo) DeleteURLs(deleteURLs []*models.DeleteURLItem) (int, error) {
 	ctx := context.Background()
 	tx, err := r.conn.Begin(ctx)
 	var n int
@@ -115,13 +120,11 @@ func (r *PostgresRepo) DeleteURLs(deleteURLs []*model.DeleteURLItem) (int, error
 		return n, err
 	}
 	defer helpers.CommitTx(ctx, tx, err)
-	var args string
-	for _, v := range deleteURLs {
-		args += fmt.Sprintf("('%s','%s'),", v.ShortURL, v.UserID)
+	shortURLs := make([]string, len(deleteURLs))
+	for i, v := range deleteURLs {
+		shortURLs[i] = v.ShortURL
 	}
-	args = args[:len(args)-1]
-	query := updateDeleteQuery + `(` + args + `)`
-	res, err := tx.Exec(ctx, query)
+	res, err := tx.Exec(ctx, updateDeleteQuery, shortURLs, deleteURLs[0].UserID)
 	if err != nil {
 		return n, err
 	}

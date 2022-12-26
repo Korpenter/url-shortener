@@ -3,32 +3,32 @@ package storage
 import (
 	"context"
 	"fmt"
-	"github.com/Mldlr/url-shortener/internal/app/model"
+	"github.com/Mldlr/url-shortener/internal/app/models"
 	"github.com/Mldlr/url-shortener/internal/app/utils/encoders"
 )
 
 type mockRepo struct {
-	urlsByShort  map[string]*model.URL
-	urlsByUser   map[string][]*model.URL
-	existingURLs map[string]*model.URL
+	urlsByShort  map[string]*models.URL
+	urlsByUser   map[string][]*models.URL
+	existingURLs map[string]*models.URL
 }
 
 // NewMockRepo returns a pointer to a new mock repo instance
 func NewMockRepo() *mockRepo {
 	mock := mockRepo{
-		urlsByShort:  make(map[string]*model.URL),
-		urlsByUser:   make(map[string][]*model.URL),
-		existingURLs: make(map[string]*model.URL),
+		urlsByShort:  make(map[string]*models.URL),
+		urlsByUser:   make(map[string][]*models.URL),
+		existingURLs: make(map[string]*models.URL),
 	}
-	url1 := &model.URL{ShortURL: "1", LongURL: "https://github.com/Mldlr/url-shortener/internal/app/utils/encoders"}
-	url2 := &model.URL{ShortURL: "2", LongURL: "https://yandex.ru/"}
+	url1 := &models.URL{ShortURL: "1", LongURL: "https://github.com/Mldlr/url-shortener/internal/app/utils/encoders"}
+	url2 := &models.URL{ShortURL: "2", LongURL: "https://yandex.ru/"}
 	mock.urlsByShort["1"] = url1
 	mock.urlsByShort["2"] = url2
-	mock.urlsByUser["KS097f1lS&F"] = []*model.URL{url1, url2}
+	mock.urlsByUser["KS097f1lS&F"] = []*models.URL{url1, url2}
 	return &mock
 }
 
-func (r *mockRepo) Get(ctx context.Context, id string) (*model.URL, error) {
+func (r *mockRepo) Get(ctx context.Context, id string) (*models.URL, error) {
 	url, ok := r.urlsByShort[id]
 	if !ok {
 		return nil, fmt.Errorf("invalid id: %s", id)
@@ -36,7 +36,7 @@ func (r *mockRepo) Get(ctx context.Context, id string) (*model.URL, error) {
 	return url, nil
 }
 
-func (r *mockRepo) Add(ctx context.Context, url *model.URL) (bool, error) {
+func (r *mockRepo) Add(ctx context.Context, url *models.URL) (bool, error) {
 	if v, k := r.existingURLs[url.LongURL]; k {
 		url.ShortURL = v.ShortURL
 		return true, nil
@@ -47,7 +47,7 @@ func (r *mockRepo) Add(ctx context.Context, url *model.URL) (bool, error) {
 	return false, nil
 }
 
-func (r *mockRepo) AddBatch(ctx context.Context, urls map[string]*model.URL) (bool, error) {
+func (r *mockRepo) AddBatch(ctx context.Context, urls map[string]*models.URL) (bool, error) {
 	var duplicates bool
 	for _, v := range urls {
 		if i, k := r.existingURLs[v.LongURL]; k {
@@ -66,8 +66,8 @@ func (r *mockRepo) NewID(url string) (string, error) {
 	return encoders.ToRBase62(url), nil
 }
 
-func (r *mockRepo) GetByUser(ctx context.Context, userID string) ([]*model.URL, error) {
-	s := []*model.URL{}
+func (r *mockRepo) GetByUser(ctx context.Context, userID string) ([]*models.URL, error) {
+	s := []*models.URL{}
 	s = append(s, r.urlsByUser[userID]...)
 	if len(s) == 0 {
 		return nil, fmt.Errorf("no urls found for user")
@@ -75,7 +75,7 @@ func (r *mockRepo) GetByUser(ctx context.Context, userID string) ([]*model.URL, 
 	return s, nil
 }
 
-func (r *mockRepo) DeleteURLs(deleteURLs []*model.DeleteURLItem) (int, error) {
+func (r *mockRepo) DeleteURLs(deleteURLs []*models.DeleteURLItem) (int, error) {
 	var n int
 	for _, v := range deleteURLs {
 		if r.urlsByShort[v.ShortURL].UserID == v.UserID {
@@ -91,7 +91,7 @@ func (r *mockRepo) Ping(context.Context) error {
 }
 
 func (r *mockRepo) DeleteRepo(context.Context) error {
-	r.urlsByShort = make(map[string]*model.URL)
-	r.urlsByUser = make(map[string][]*model.URL)
+	r.urlsByShort = make(map[string]*models.URL)
+	r.urlsByUser = make(map[string][]*models.URL)
 	return nil
 }

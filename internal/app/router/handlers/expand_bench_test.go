@@ -3,7 +3,7 @@ package handlers
 import (
 	"context"
 	"fmt"
-	"github.com/Mldlr/url-shortener/internal/app/model"
+	"github.com/Mldlr/url-shortener/internal/app/models"
 	"github.com/Mldlr/url-shortener/internal/app/storage"
 	"github.com/Mldlr/url-shortener/internal/app/utils/encoders"
 	"github.com/stretchr/testify/require"
@@ -18,9 +18,9 @@ func BenchmarkExpand(b *testing.B) {
 	repo, err := storage.NewPostgresMockRepo(dbURL)
 	require.NoError(b, err)
 	defer repo.DeleteRepo(context.Background())
-	urls := make(map[string]*model.URL, 10000)
+	urls := make(map[string]*models.URL, 10000)
 	for i := 0; i < 10000; i++ {
-		urls[fmt.Sprint(i)] = &model.URL{UserID: "user1",
+		urls[fmt.Sprint(i)] = &models.URL{UserID: "user1",
 			ShortURL: encoders.ToRBase62(fmt.Sprint(i)),
 			LongURL:  fmt.Sprint(i) + ".ru"}
 	}

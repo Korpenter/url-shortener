@@ -7,7 +7,7 @@ import (
 	"net/http"
 
 	"github.com/Mldlr/url-shortener/internal/app/config"
-	"github.com/Mldlr/url-shortener/internal/app/model"
+	"github.com/Mldlr/url-shortener/internal/app/models"
 	"github.com/Mldlr/url-shortener/internal/app/storage"
 	"github.com/Mldlr/url-shortener/internal/app/utils/validators"
 )
@@ -15,7 +15,7 @@ import (
 // Expand returns a handler that gets original link from db
 func APIShorten(repo storage.Repository, c *config.Config) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		var body *model.URL
+		var body *models.URL
 		var err error
 		if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
 			http.Error(w, "error reading request", http.StatusBadRequest)
@@ -48,7 +48,7 @@ func APIShorten(repo storage.Repository, c *config.Config) http.HandlerFunc {
 		} else {
 			w.WriteHeader(http.StatusCreated)
 		}
-		if err := json.NewEncoder(w).Encode(model.Response{Result: c.BaseURL + "/" + body.ShortURL}); err != nil {
+		if err := json.NewEncoder(w).Encode(models.Response{Result: c.BaseURL + body.ShortURL}); err != nil {
 			http.Error(w, "error building the response", http.StatusInternalServerError)
 			return
 		}

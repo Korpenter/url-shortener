@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/Mldlr/url-shortener/internal/app/model"
+	"github.com/Mldlr/url-shortener/internal/app/models"
 	"github.com/Mldlr/url-shortener/internal/app/utils/encoders"
 	"github.com/Mldlr/url-shortener/internal/app/utils/helpers"
 	"github.com/jackc/pgx/v5"
@@ -24,11 +24,12 @@ const (
 	VALUES ($1, $2, $3)
 	ON CONFLICT DO NOTHING
 	RETURNING short`
-	mockDeleteQuery    = `UPDATE urls_test SET deleted=TRUE WHERE (short, userid) IN `
-	mockGetQuery       = `SELECT original, deleted FROM urls_test WHERE short = $1`
-	mockGetByUserQuery = `SELECT * FROM urls_test WHERE userid = $1`
-	mockGetShort       = `SELECT short FROM urls_test WHERE original = $1`
-	mockDrop           = `DROP TABLE urls_test`
+	mockUpdateDeleteQuery = `DELETE FROM urls_test WHERE short IN (SELECT unnest($1::text[])) AND userid = $2`
+	mockGetQuery          = `SELECT original, deleted FROM urls_test WHERE short = $1`
+	mockGetByUserQuery    = `SELECT * FROM urls_test WHERE userid = $1`
+	mockGetShort          = `SELECT short FROM urls_test WHERE original = $1`
+	mockCountUserURLs     = "SELECT count(*) FROM urls_test WHERE userid = $1"
+	mockDrop              = `DROP TABLE urls_test`
 )
 
 type PostgresMockRepo struct {
@@ -44,8 +45,8 @@ func NewPostgresMockRepo(connString string) (*PostgresMockRepo, error) {
 	if err != nil {
 		return nil, err
 	}
-	url1 := &model.URL{ShortURL: "1", LongURL: "https://github.com/Mldlr/url-shortener/internal/app/utils/encoders"}
-	url2 := &model.URL{ShortURL: "2", LongURL: "https://yandex.ru/"}
+	url1 := &models.URL{ShortURL: "1", LongURL: "https://github.com/Mldlr/url-shortener/internal/app/utils/encoders"}
+	url2 := &models.URL{ShortURL: "2", LongURL: "https://yandex.ru/"}
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 	_, err = conn.Exec(ctx, mockCreateUrls)
@@ -58,8 +59,8 @@ func NewPostgresMockRepo(connString string) (*PostgresMockRepo, error) {
 	return repo, nil
 }
 
-func (r *PostgresMockRepo) Get(ctx context.Context, id string) (*model.URL, error) {
-	var url model.URL
+func (r *PostgresMockRepo) Get(ctx context.Context, id string) (*models.URL, error) {
+	var url models.URL
 	err := r.conn.QueryRow(ctx, mockGetQuery, id).Scan(&url.LongURL, &url.Deleted)
 	if err != nil {
 		return nil, fmt.Errorf("invalid id: %v", id)
@@ -67,9 +68,11 @@ func (r *PostgresMockRepo) Get(ctx context.Context, id string) (*model.URL, erro
 	return &url, nil
 }
 
-func (r *PostgresMockRepo) GetByUser(ctx context.Context, userID string) ([]*model.URL, error) {
-	var url model.URL
-	urls := make([]*model.URL, 0)
+func (r *PostgresMockRepo) GetByUser(ctx context.Context, userID string) ([]*models.URL, error) {
+	var url models.URL
+	var count int
+	err := r.conn.QueryRow(ctx, mockCountUserURLs, userID).Scan(count)
+	urls := make([]*models.URL, 0, count)
 	rows, err := r.conn.Query(ctx, mockGetByUserQuery, userID)
 	if err != nil {
 		return nil, err
@@ -78,20 +81,17 @@ func (r *PostgresMockRepo) GetByUser(ctx context.Context, userID string) ([]*mod
 		return nil, rows.Err()
 	}
 	defer rows.Close()
-
 	for rows.Next() {
 		err = rows.Scan(&url.ShortURL, &url.LongURL, &url.UserID, &url.Deleted)
 		if err != nil {
 			return nil, err
 		}
-
 		urls = append(urls, &url)
 	}
-
 	return urls, nil
 }
 
-func (r *PostgresMockRepo) Add(ctx context.Context, url *model.URL) (bool, error) {
+func (r *PostgresMockRepo) Add(ctx context.Context, url *models.URL) (bool, error) {
 	var duplicates bool
 	tx, err := r.conn.Begin(ctx)
 	if err != nil {
@@ -110,7 +110,7 @@ func (r *PostgresMockRepo) Add(ctx context.Context, url *model.URL) (bool, error
 	return duplicates, nil
 }
 
-func (r *PostgresMockRepo) AddBatch(ctx context.Context, urls map[string]*model.URL) (bool, error) {
+func (r *PostgresMockRepo) AddBatch(ctx context.Context, urls map[string]*models.URL) (bool, error) {
 	var duplicates bool
 	tx, err := r.conn.Begin(ctx)
 	if err != nil {
@@ -126,14 +126,14 @@ func (r *PostgresMockRepo) AddBatch(ctx context.Context, urls map[string]*model.
 			}
 		}
 	}
-	return duplicates, nil
+	return duplicates, err
 }
 
 func (r *PostgresMockRepo) NewID(url string) (string, error) {
 	return encoders.ToRBase62(url), nil
 }
 
-func (r *PostgresMockRepo) DeleteURLs(deleteURLs []*model.DeleteURLItem) (int, error) {
+func (r *PostgresMockRepo) DeleteURLs(deleteURLs []*models.DeleteURLItem) (int, error) {
 	ctx := context.Background()
 	tx, err := r.conn.Begin(ctx)
 	var n int
@@ -141,13 +141,11 @@ func (r *PostgresMockRepo) DeleteURLs(deleteURLs []*model.DeleteURLItem) (int, e
 		return n, err
 	}
 	defer helpers.CommitTx(ctx, tx, err)
-	var args string
-	for _, v := range deleteURLs {
-		args += fmt.Sprintf("('%s','%s'),", v.ShortURL, v.UserID)
+	shortURLs := make([]string, len(deleteURLs))
+	for i, v := range deleteURLs {
+		shortURLs[i] = v.ShortURL
 	}
-	args = args[:len(args)-1]
-	query := mockDeleteQuery + `(` + args + `)`
-	res, err := tx.Exec(ctx, query)
+	res, err := tx.Exec(ctx, mockUpdateDeleteQuery, shortURLs, deleteURLs[0].UserID)
 	if err != nil {
 		return n, err
 	}

@@ -8,19 +8,19 @@ import (
 	"time"
 
 	"github.com/Mldlr/url-shortener/internal/app/config"
-	"github.com/Mldlr/url-shortener/internal/app/model"
+	"github.com/Mldlr/url-shortener/internal/app/models"
 )
 
 // Repository interface for storage instances
 type Repository interface {
-	Get(ctx context.Context, id string) (*model.URL, error)
-	GetByUser(ctx context.Context, userID string) ([]*model.URL, error)
-	Add(ctx context.Context, url *model.URL) (bool, error)
-	AddBatch(ctx context.Context, urls map[string]*model.URL) (bool, error)
+	Get(ctx context.Context, id string) (*models.URL, error)
+	GetByUser(ctx context.Context, userID string) ([]*models.URL, error)
+	Add(ctx context.Context, url *models.URL) (bool, error)
+	AddBatch(ctx context.Context, urls map[string]*models.URL) (bool, error)
 	NewID(url string) (string, error)
 	Ping(ctx context.Context) error
 	DeleteRepo(ctx context.Context) error
-	DeleteURLs(deleteURLs []*model.DeleteURLItem) (int, error)
+	DeleteURLs(deleteURLs []*models.DeleteURLItem) (int, error)
 }
 
 func New(c *config.Config) Repository {

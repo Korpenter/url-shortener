@@ -2,7 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
-	"github.com/Mldlr/url-shortener/internal/app/model"
+	"github.com/Mldlr/url-shortener/internal/app/models"
 	"github.com/Mldlr/url-shortener/internal/app/router/loader"
 	"github.com/Mldlr/url-shortener/internal/app/router/middleware"
 	"io"
@@ -29,9 +29,9 @@ func APIDeleteBatch(loader *loader.UserLoader) http.HandlerFunc {
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
-		deleteURLs := make([]*model.DeleteURLItem, 0, len(urlIDs))
-		for _, v := range urlIDs {
-			deleteURLs = append(deleteURLs, &model.DeleteURLItem{UserID: userID, ShortURL: v})
+		deleteURLs := make([]*models.DeleteURLItem, len(urlIDs))
+		for i, v := range urlIDs {
+			deleteURLs[i] = &models.DeleteURLItem{UserID: userID, ShortURL: v}
 		}
 		go func() {
 			num, err := loader.LoadAll(deleteURLs)
