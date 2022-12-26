@@ -2,9 +2,10 @@ package server
 
 import (
 	"fmt"
+	"net/http"
+
 	"github.com/Mldlr/url-shortener/internal/app/config"
 	"github.com/go-chi/chi/v5"
-	"net/http"
 )
 
 // NewServer returns a pointer to a new http.Server instance

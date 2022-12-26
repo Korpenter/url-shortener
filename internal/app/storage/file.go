@@ -4,12 +4,13 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/Mldlr/url-shortener/internal/app/models"
-	"github.com/Mldlr/url-shortener/internal/app/utils/encoders"
 	"io"
 	"log"
 	"os"
 	"sync"
+
+	"github.com/Mldlr/url-shortener/internal/app/models"
+	"github.com/Mldlr/url-shortener/internal/app/utils/encoders"
 )
 
 // FileRepo is an in-file url storage

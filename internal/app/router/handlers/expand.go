@@ -1,9 +1,10 @@
 package handlers
 
 import (
-	"github.com/Mldlr/url-shortener/internal/app/storage"
 	"net/http"
 	"strings"
+
+	"github.com/Mldlr/url-shortener/internal/app/storage"
 )
 
 // Expand returns a handler that gets original link from db

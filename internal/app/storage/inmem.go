@@ -3,8 +3,9 @@ package storage
 import (
 	"context"
 	"fmt"
-	"github.com/Mldlr/url-shortener/internal/app/utils/encoders"
 	"sync"
+
+	"github.com/Mldlr/url-shortener/internal/app/utils/encoders"
 
 	"github.com/Mldlr/url-shortener/internal/app/models"
 )

@@ -2,12 +2,13 @@ package handlers
 
 import (
 	"encoding/json"
+	"net/http"
+	"strings"
+
 	"github.com/Mldlr/url-shortener/internal/app/config"
 	"github.com/Mldlr/url-shortener/internal/app/models"
 	"github.com/Mldlr/url-shortener/internal/app/router/middleware"
 	"github.com/Mldlr/url-shortener/internal/app/storage"
-	"net/http"
-	"strings"
 )
 
 func APIUserExpand(repo storage.Repository, c *config.Config) http.HandlerFunc {

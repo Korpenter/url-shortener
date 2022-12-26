@@ -1,8 +1,9 @@
 package encoders
 
 import (
-	"github.com/stretchr/testify/assert"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestToBase62(t *testing.T) {

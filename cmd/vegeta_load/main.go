@@ -3,12 +3,13 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/Mldlr/url-shortener/internal/app/utils/encoders"
-	vegeta "github.com/tsenart/vegeta/v12/lib"
 	"log"
 	"net/http"
 	"sync/atomic"
 	"time"
+
+	"github.com/Mldlr/url-shortener/internal/app/utils/encoders"
+	vegeta "github.com/tsenart/vegeta/v12/lib"
 )
 
 func main() {

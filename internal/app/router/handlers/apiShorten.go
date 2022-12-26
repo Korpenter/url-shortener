@@ -3,9 +3,10 @@ package handlers
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/Mldlr/url-shortener/internal/app/router/middleware"
 	"net/http"
 	"strings"
+
+	"github.com/Mldlr/url-shortener/internal/app/router/middleware"
 
 	"github.com/Mldlr/url-shortener/internal/app/config"
 	"github.com/Mldlr/url-shortener/internal/app/models"

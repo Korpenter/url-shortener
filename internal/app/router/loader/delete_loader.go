@@ -1,9 +1,10 @@
 package loader
 
 import (
+	"time"
+
 	"github.com/Mldlr/url-shortener/internal/app/models"
 	"github.com/Mldlr/url-shortener/internal/app/storage"
-	"time"
 )
 
 func NewDeleteLoader(repo storage.Repository) *UserLoader {

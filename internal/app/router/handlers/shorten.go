@@ -2,15 +2,16 @@ package handlers
 
 import (
 	"fmt"
+	"io"
+	"log"
+	"net/http"
+	"strings"
+
 	"github.com/Mldlr/url-shortener/internal/app/config"
 	"github.com/Mldlr/url-shortener/internal/app/models"
 	"github.com/Mldlr/url-shortener/internal/app/router/middleware"
 	"github.com/Mldlr/url-shortener/internal/app/storage"
 	"github.com/Mldlr/url-shortener/internal/app/utils/validators"
-	"io"
-	"log"
-	"net/http"
-	"strings"
 )
 
 // Shorten returns a handler that shortens links and adds them to db

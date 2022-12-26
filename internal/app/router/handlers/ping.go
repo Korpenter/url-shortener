@@ -1,8 +1,9 @@
 package handlers
 
 import (
-	"github.com/Mldlr/url-shortener/internal/app/storage"
 	"net/http"
+
+	"github.com/Mldlr/url-shortener/internal/app/storage"
 )
 
 func Ping(repo storage.Repository) http.HandlerFunc {

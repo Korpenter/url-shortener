@@ -3,14 +3,15 @@ package handlers
 import (
 	"context"
 	"fmt"
-	"github.com/Mldlr/url-shortener/internal/app/config"
-	"github.com/Mldlr/url-shortener/internal/app/storage"
-	"github.com/stretchr/testify/require"
 	"net/http"
 	"net/http/httptest"
 	"os"
 	"strings"
 	"testing"
+
+	"github.com/Mldlr/url-shortener/internal/app/config"
+	"github.com/Mldlr/url-shortener/internal/app/storage"
+	"github.com/stretchr/testify/require"
 )
 
 func BenchmarkShorten(b *testing.B) {
