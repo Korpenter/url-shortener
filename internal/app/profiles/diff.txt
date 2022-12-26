@@ -2,40 +2,37 @@ File: main
 Type: alloc_space
 Time: Dec 26, 2022 at 9:01am (MSK)
 Duration: 160.01s, Total samples = 71767.06MB 
-Showing nodes accounting for -32914.38MB, 45.86% of 71767.06MB total
-Dropped 217 nodes (cum <= 358.84MB)
+Showing nodes accounting for -34243.48MB, 47.71% of 71767.06MB total
+Dropped 235 nodes (cum <= 358.84MB)
       flat  flat%   sum%        cum   cum%
--23478.33MB 32.71% 32.71% -30999.77MB 43.19%  github.com/Mldlr/url-shortener/internal/app/router/handlers.APIUserExpand.func1
- 7082.82MB  9.87% 22.85%  7082.82MB  9.87%  strings.(*Builder).grow (inline)
--7077.82MB  9.86% 32.71% -7078.82MB  9.86%  fmt.Sprintf
--4580.82MB  6.38% 39.09% -4392.82MB  6.12%  github.com/Mldlr/url-shortener/internal/app/storage.(*PostgresRepo).GetByUser
--3095.89MB  4.31% 43.40% -3095.89MB  4.31%  bytes.growSlice
--1954.84MB  2.72% 46.13% -1995.95MB  2.78%  github.com/Mldlr/url-shortener/internal/app/storage.(*PostgresRepo).DeleteURLs
-  186.50MB  0.26% 45.87%   186.50MB  0.26%  github.com/jackc/pgx/v5/pgtype.scanPlanString.Scan
-    3.50MB 0.0049% 45.86%      190MB  0.26%  github.com/jackc/pgx/v5.(*baseRows).Scan
-    0.50MB 0.0007% 45.86% -3095.39MB  4.31%  bytes.(*Buffer).grow
-         0     0% 45.86% -3098.39MB  4.32%  bytes.(*Buffer).WriteString
-         0     0% 45.86% -3118.11MB  4.34%  encoding/json.(*Encoder).Encode
-         0     0% 45.86% -3097.39MB  4.32%  encoding/json.(*encodeState).marshal
-         0     0% 45.86% -3097.39MB  4.32%  encoding/json.(*encodeState).reflectValue
-         0     0% 45.86% -2904.39MB  4.05%  encoding/json.(*encodeState).string
-         0     0% 45.86% -3097.39MB  4.32%  encoding/json.arrayEncoder.encode
-         0     0% 45.86% -3097.39MB  4.32%  encoding/json.sliceEncoder.encode
-         0     0% 45.86% -2904.39MB  4.05%  encoding/json.stringEncoder
-         0     0% 45.86% -3097.39MB  4.32%  encoding/json.structEncoder.encode
-         0     0% 45.86% -1995.95MB  2.78%  github.com/Mldlr/url-shortener/internal/app/router/loader.(*userLoaderBatch).end
-         0     0% 45.86% -1995.95MB  2.78%  github.com/Mldlr/url-shortener/internal/app/router/loader.NewDeleteLoader.func1
-         0     0% 45.86% -31211.29MB 43.49%  github.com/Mldlr/url-shortener/internal/app/router/middleware.Auth.Authenticate.func1
-         0     0% 45.86% -31211.29MB 43.49%  github.com/Mldlr/url-shortener/internal/app/router/middleware.Decompress.func1
-         0     0% 45.86% -31214.79MB 43.49%  github.com/go-chi/chi/v5.(*Mux).ServeHTTP
-         0     0% 45.86% -31208.79MB 43.49%  github.com/go-chi/chi/v5.(*Mux).routeHTTP
-         0     0% 45.86% -31209.79MB 43.49%  github.com/go-chi/chi/v5/middleware.(*Compressor).Handler.func1
-         0     0% 45.86% -31209.79MB 43.49%  github.com/go-chi/chi/v5/middleware.AllowContentEncoding.func1.1
-         0     0% 45.86% -31211.29MB 43.49%  github.com/go-chi/chi/v5/middleware.Recoverer.func1
-         0     0% 45.86% -31216.79MB 43.50%  github.com/go-chi/chi/v5/middleware.RequestLogger.func1.1
-         0     0% 45.86%   187.50MB  0.26%  github.com/jackc/pgx/v5/pgxpool.(*poolRows).Scan
-         0     0% 45.86% -31226.63MB 43.51%  net/http.(*conn).serve
-         0     0% 45.86% -31216.79MB 43.50%  net/http.HandlerFunc.ServeHTTP
-         0     0% 45.86% -31214.62MB 43.49%  net/http.serverHandler.ServeHTTP
-         0     0% 45.86%  7082.82MB  9.87%  strings.(*Builder).Grow (inline)
-         0     0% 45.86%  7056.82MB  9.83%  strings.Join
+-23552.16MB 32.82% 32.82% -32208.99MB 44.88%  github.com/Mldlr/url-shortener/internal/app/router/handlers.APIUserExpand.func1
+-7077.82MB  9.86% 42.68% -7078.82MB  9.86%  fmt.Sprintf
+ 6944.32MB  9.68% 33.00%  6944.32MB  9.68%  strings.(*Builder).grow (inline)
+-4804.67MB  6.69% 39.70% -4694.17MB  6.54%  github.com/Mldlr/url-shortener/internal/app/storage.(*PostgresRepo).GetByUser
+-3797.79MB  5.29% 44.99% -3797.79MB  5.29%  bytes.growSlice
+-1954.84MB  2.72% 47.71% -1995.95MB  2.78%  github.com/Mldlr/url-shortener/internal/app/storage.(*PostgresRepo).DeleteURLs
+   -0.50MB 0.0007% 47.71% -32437.13MB 45.20%  github.com/go-chi/chi/v5/middleware.(*Compressor).Handler.func1
+         0     0% 47.71% -3796.27MB  5.29%  bytes.(*Buffer).WriteString
+         0     0% 47.71% -3797.79MB  5.29%  bytes.(*Buffer).grow
+         0     0% 47.71% -3830.88MB  5.34%  encoding/json.(*Encoder).Encode
+         0     0% 47.71% -3796.79MB  5.29%  encoding/json.(*encodeState).marshal
+         0     0% 47.71% -3796.79MB  5.29%  encoding/json.(*encodeState).reflectValue
+         0     0% 47.71% -3551.53MB  4.95%  encoding/json.(*encodeState).string
+         0     0% 47.71% -3796.79MB  5.29%  encoding/json.arrayEncoder.encode
+         0     0% 47.71% -3796.79MB  5.29%  encoding/json.sliceEncoder.encode
+         0     0% 47.71% -3551.53MB  4.95%  encoding/json.stringEncoder
+         0     0% 47.71% -3796.79MB  5.29%  encoding/json.structEncoder.encode
+         0     0% 47.71% -1995.95MB  2.78%  github.com/Mldlr/url-shortener/internal/app/router/loader.(*userLoaderBatch).end
+         0     0% 47.71% -1995.95MB  2.78%  github.com/Mldlr/url-shortener/internal/app/router/loader.NewDeleteLoader.func1
+         0     0% 47.71% -32434.63MB 45.19%  github.com/Mldlr/url-shortener/internal/app/router/middleware.Auth.Authenticate.func1
+         0     0% 47.71% -32434.63MB 45.19%  github.com/Mldlr/url-shortener/internal/app/router/middleware.Decompress.func1
+         0     0% 47.71% -32435.63MB 45.20%  github.com/go-chi/chi/v5.(*Mux).ServeHTTP
+         0     0% 47.71% -32440.14MB 45.20%  github.com/go-chi/chi/v5.(*Mux).routeHTTP
+         0     0% 47.71% -32437.13MB 45.20%  github.com/go-chi/chi/v5/middleware.AllowContentEncoding.func1.1
+         0     0% 47.71% -32434.63MB 45.19%  github.com/go-chi/chi/v5/middleware.Recoverer.func1
+         0     0% 47.71% -32438.63MB 45.20%  github.com/go-chi/chi/v5/middleware.RequestLogger.func1.1
+         0     0% 47.71% -32434.45MB 45.19%  net/http.(*conn).serve
+         0     0% 47.71% -32438.13MB 45.20%  net/http.HandlerFunc.ServeHTTP
+         0     0% 47.71% -32433.46MB 45.19%  net/http.serverHandler.ServeHTTP
+         0     0% 47.71%  6944.32MB  9.68%  strings.(*Builder).Grow (inline)
+         0     0% 47.71%  6918.32MB  9.64%  strings.Join

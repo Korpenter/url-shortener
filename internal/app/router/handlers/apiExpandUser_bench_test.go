@@ -18,10 +18,14 @@ import (
 func BenchmarkAPIUserExpandAPI(b *testing.B) {
 	cfg := &config.Config{ServerAddress: "localhost:8080", BaseURL: "http://localhost:8080"}
 	dbURL := os.Getenv("DATABASE_DSN")
-	repo, err := storage.NewPostgresMockRepo(dbURL)
-	require.NoError(b, err)
-	defer repo.DeleteRepo(context.Background())
-
+	var repo storage.Repository
+	var err error
+	if dbURL != "" {
+		repo, err = storage.NewPostgresMockRepo(dbURL)
+		require.NoError(b, err)
+	} else {
+		repo = storage.NewMockRepo()
+	}
 	handler := APIUserExpand(repo, cfg)
 	urls := make(map[string]*models.URL, 10000)
 	for i := 0; i < 10000; i++ {
@@ -33,6 +37,7 @@ func BenchmarkAPIUserExpandAPI(b *testing.B) {
 
 	b.ResetTimer()
 	b.Run("ExpandUserAPI", func(b *testing.B) {
+		b.ReportAllocs()
 		for i := 0; i < b.N; i++ {
 			b.StopTimer()
 			request := httptest.NewRequest(http.MethodGet, "/api/user/urls", nil)

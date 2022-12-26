@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -20,9 +19,14 @@ import (
 func BenchmarkAPIShortenBatch(b *testing.B) {
 	cfg := &config.Config{ServerAddress: "localhost:8080", BaseURL: "http://localhost:8080"}
 	dbURL := os.Getenv("DATABASE_DSN")
-	repo, err := storage.NewPostgresMockRepo(dbURL)
-	defer repo.DeleteRepo(context.Background())
-	require.NoError(b, err)
+	var repo storage.Repository
+	var err error
+	if dbURL != "" {
+		repo, err = storage.NewPostgresMockRepo(dbURL)
+		require.NoError(b, err)
+	} else {
+		repo = storage.NewMockRepo()
+	}
 
 	handler := APIShortenBatch(repo, cfg)
 	ShortenItems := make([]models.BatchReqItem, 0, 10000)
@@ -31,14 +35,17 @@ func BenchmarkAPIShortenBatch(b *testing.B) {
 	}
 	b.ResetTimer()
 	b.Run("ShortenAPIBatch", func(b *testing.B) {
-		b.StopTimer()
-		body, err := json.Marshal(ShortenItems)
-		require.NoError(b, err)
-		request := httptest.NewRequest(http.MethodPost, "/api/shorten/batch", strings.NewReader(string(body)))
-		request.Header = map[string][]string{"Cookie": {"user_id=user1", "signature=60e8d0babc58e796ac223a64b5e68b998de7d3b203bc8a859bc0ec15ee66f5f9"}}
-		w := httptest.NewRecorder()
-		b.StartTimer()
-		handler.ServeHTTP(w, request)
-		_ = w.Result().Body.Close()
+		b.ReportAllocs()
+		for i := 0; i < b.N; i++ {
+			b.StopTimer()
+			body, err := json.Marshal(ShortenItems)
+			require.NoError(b, err)
+			request := httptest.NewRequest(http.MethodPost, "/api/shorten/batch", strings.NewReader(string(body)))
+			request.Header = map[string][]string{"Cookie": {"user_id=user1", "signature=60e8d0babc58e796ac223a64b5e68b998de7d3b203bc8a859bc0ec15ee66f5f9"}}
+			w := httptest.NewRecorder()
+			b.StartTimer()
+			handler.ServeHTTP(w, request)
+			_ = w.Result().Body.Close()
+		}
 	})
 }

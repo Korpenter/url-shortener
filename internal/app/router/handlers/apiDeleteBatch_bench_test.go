@@ -19,8 +19,14 @@ import (
 
 func BenchmarkAPIDeleteBatchAPI(b *testing.B) {
 	dbURL := os.Getenv("DATABASE_DSN")
-	repo, err := storage.NewPostgresMockRepo(dbURL)
-	require.NoError(b, err)
+	var repo storage.Repository
+	var err error
+	if dbURL != "" {
+		repo, err = storage.NewPostgresMockRepo(dbURL)
+		require.NoError(b, err)
+	} else {
+		repo = storage.NewMockRepo()
+	}
 	defer repo.DeleteRepo(context.Background())
 	handler := APIDeleteBatch(loader.NewDeleteLoader(repo))
 	urls := make(map[string]*models.URL, 10000)
@@ -37,14 +43,17 @@ func BenchmarkAPIDeleteBatchAPI(b *testing.B) {
 	}
 	b.ResetTimer()
 	b.Run("APIDeleteBatch", func(b *testing.B) {
-		b.StopTimer()
-		body, err := json.Marshal(deleteURLs)
-		require.NoError(b, err)
-		request := httptest.NewRequest(http.MethodPost, "/api/shorten/batch", strings.NewReader(string(body)))
-		request.Header = map[string][]string{"Cookie": {"user_id=user1", "signature=60e8d0babc58e796ac223a64b5e68b998de7d3b203bc8a859bc0ec15ee66f5f9"}}
-		w := httptest.NewRecorder()
-		b.StartTimer()
-		handler.ServeHTTP(w, request)
-		_ = w.Result().Body.Close()
+		b.ReportAllocs()
+		for i := 0; i < 1000; i++ {
+			b.StopTimer()
+			body, err := json.Marshal(deleteURLs)
+			require.NoError(b, err)
+			request := httptest.NewRequest(http.MethodPost, "/api/shorten/batch", strings.NewReader(string(body)))
+			request.Header = map[string][]string{"Cookie": {"user_id=user1", "signature=60e8d0babc58e796ac223a64b5e68b998de7d3b203bc8a859bc0ec15ee66f5f9"}}
+			w := httptest.NewRecorder()
+			b.StartTimer()
+			handler.ServeHTTP(w, request)
+			_ = w.Result().Body.Close()
+		}
 	})
 }

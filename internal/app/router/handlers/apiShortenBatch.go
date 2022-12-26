@@ -3,14 +3,13 @@ package handlers
 import (
 	"encoding/json"
 	"fmt"
-	"net/http"
-	"strings"
-
 	"github.com/Mldlr/url-shortener/internal/app/config"
 	"github.com/Mldlr/url-shortener/internal/app/models"
 	"github.com/Mldlr/url-shortener/internal/app/router/middleware"
 	"github.com/Mldlr/url-shortener/internal/app/storage"
 	"github.com/Mldlr/url-shortener/internal/app/utils/validators"
+	"net/http"
+	"strings"
 )
 
 func APIShortenBatch(repo storage.Repository, c *config.Config) http.HandlerFunc {
@@ -23,13 +22,13 @@ func APIShortenBatch(repo storage.Repository, c *config.Config) http.HandlerFunc
 		defer r.Body.Close()
 
 		urls := make(map[string]*models.URL, len(bodyItems))
-		respItems := make([]models.BatchRespItem, 0, len(bodyItems))
-		for _, v := range bodyItems {
+		respItems := make([]models.BatchRespItem, len(bodyItems))
+		for i, v := range bodyItems {
 			if !validators.IsURL(v.OrigURL) {
-				respItems = append(respItems, models.BatchRespItem{
+				respItems[i] = models.BatchRespItem{
 					CorID:    v.CorID,
 					ShortURL: "incorrect url",
-				})
+				}
 				continue
 			}
 			id, err := repo.NewID(v.OrigURL)
@@ -42,25 +41,20 @@ func APIShortenBatch(repo storage.Repository, c *config.Config) http.HandlerFunc
 				http.Error(w, fmt.Sprintf("error getting user cookie: %v", err), http.StatusInternalServerError)
 				return
 			}
-
 			urls[v.CorID] = &models.URL{
 				ShortURL: id,
 				LongURL:  v.OrigURL,
 				UserID:   userID,
+			}
+			respItems[i] = models.BatchRespItem{
+				CorID:    v.CorID,
+				ShortURL: strings.Join([]string{c.BaseURL, id}, "/"),
 			}
 		}
 		duplicates, err := repo.AddBatch(r.Context(), urls)
 		if err != nil {
 			http.Error(w, fmt.Sprintf("error adding record to db: %v", err), http.StatusInternalServerError)
 			return
-		}
-		for i, v := range urls {
-			shortURL := strings.Join([]string{c.BaseURL, v.ShortURL}, "/")
-			respItems = append(respItems, models.BatchRespItem{
-				CorID:    i,
-				ShortURL: shortURL,
-			})
-
 		}
 		w.Header().Set("Content-Type", "application/json")
 		if duplicates {

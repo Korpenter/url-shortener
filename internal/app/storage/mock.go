@@ -68,7 +68,7 @@ func (r *mockRepo) NewID(url string) (string, error) {
 }
 
 func (r *mockRepo) GetByUser(ctx context.Context, userID string) ([]*models.URL, error) {
-	s := []*models.URL{}
+	s := make([]*models.URL, 0)
 	s = append(s, r.urlsByUser[userID]...)
 	if len(s) == 0 {
 		return nil, fmt.Errorf("no urls found for user")
@@ -79,7 +79,7 @@ func (r *mockRepo) GetByUser(ctx context.Context, userID string) ([]*models.URL,
 func (r *mockRepo) DeleteURLs(deleteURLs []*models.DeleteURLItem) (int, error) {
 	var n int
 	for _, v := range deleteURLs {
-		if r.urlsByShort[v.ShortURL].UserID == v.UserID {
+		if _, ok := r.urlsByShort[v.ShortURL]; ok && r.urlsByShort[v.ShortURL].UserID == v.UserID {
 			r.urlsByShort[v.ShortURL].Deleted = true
 			n++
 		}
