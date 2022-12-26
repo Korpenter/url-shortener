@@ -24,7 +24,7 @@ const (
 	VALUES ($1, $2, $3)
 	ON CONFLICT DO NOTHING
 	RETURNING short`
-	mockUpdateDeleteQuery = `DELETE FROM urls_test WHERE short IN (SELECT unnest($1::text[])) AND userid = $2`
+	mockUpdateDeleteQuery = `UPDATE urls_test SET deleted=TRUE WHERE short IN (SELECT unnest($1::text[])) AND userid = $2`
 	mockGetQuery          = `SELECT original, deleted FROM urls_test WHERE short = $1`
 	mockGetByUserQuery    = `SELECT * FROM urls_test WHERE userid = $1`
 	mockGetShort          = `SELECT short FROM urls_test WHERE original = $1`
