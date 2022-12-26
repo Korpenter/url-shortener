@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/Mldlr/url-shortener/internal/app/model"
 	"github.com/Mldlr/url-shortener/internal/app/utils/encoders"
+	"github.com/Mldlr/url-shortener/internal/app/utils/helpers"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -79,7 +80,7 @@ func (r *PostgresMockRepo) GetByUser(ctx context.Context, userID string) ([]*mod
 	defer rows.Close()
 
 	for rows.Next() {
-		err = rows.Scan(&url.ShortURL, &url.LongURL, &url.UserID)
+		err = rows.Scan(&url.ShortURL, &url.LongURL, &url.UserID, &url.Deleted)
 		if err != nil {
 			return nil, err
 		}
@@ -96,13 +97,7 @@ func (r *PostgresMockRepo) Add(ctx context.Context, url *model.URL) (bool, error
 	if err != nil {
 		return false, err
 	}
-	defer func() {
-		if err != nil {
-			tx.Rollback(ctx)
-		} else {
-			tx.Commit(ctx)
-		}
-	}()
+	defer helpers.CommitTx(ctx, tx, err)
 	err = tx.QueryRow(ctx, mockAddQuery, url.ShortURL, url.LongURL, url.UserID).Scan(&url.ShortURL)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
@@ -121,13 +116,7 @@ func (r *PostgresMockRepo) AddBatch(ctx context.Context, urls map[string]*model.
 	if err != nil {
 		return false, err
 	}
-	defer func() {
-		if err != nil {
-			tx.Rollback(ctx)
-		} else {
-			tx.Commit(ctx)
-		}
-	}()
+	defer helpers.CommitTx(ctx, tx, err)
 	for _, v := range urls {
 		err = tx.QueryRow(ctx, mockAddQuery, v.ShortURL, v.LongURL, v.UserID).Scan(&v.ShortURL)
 		if err != nil {
@@ -151,13 +140,7 @@ func (r *PostgresMockRepo) DeleteURLs(deleteURLs []*model.DeleteURLItem) (int, e
 	if err != nil {
 		return n, err
 	}
-	defer func() {
-		if err != nil {
-			tx.Rollback(ctx)
-		} else {
-			tx.Commit(ctx)
-		}
-	}()
+	defer helpers.CommitTx(ctx, tx, err)
 	var args string
 	for _, v := range deleteURLs {
 		args += fmt.Sprintf("('%s','%s'),", v.ShortURL, v.UserID)

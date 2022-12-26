@@ -24,7 +24,7 @@ func BenchmarkAPIUserExpandAPI(b *testing.B) {
 	handler := APIUserExpand(repo, cfg)
 	urls := make(map[string]*model.URL, 10000)
 	for i := 0; i < 10000; i++ {
-		urls[fmt.Sprint(i)] = &model.URL{UserID: "testUser",
+		urls[fmt.Sprint(i)] = &model.URL{UserID: "user1",
 			ShortURL: encoders.ToRBase62(fmt.Sprint(i)),
 			LongURL:  fmt.Sprint(i) + ".com"}
 	}
@@ -35,8 +35,8 @@ func BenchmarkAPIUserExpandAPI(b *testing.B) {
 		for i := 0; i < b.N; i++ {
 			b.StopTimer()
 			request := httptest.NewRequest(http.MethodGet, "/api/user/urls", nil)
+			request.Header = map[string][]string{"Cookie": {"user_id=user1", "signature=60e8d0babc58e796ac223a64b5e68b998de7d3b203bc8a859bc0ec15ee66f5f9"}}
 			w := httptest.NewRecorder()
-			http.SetCookie(w, &http.Cookie{Name: "user_id", Value: "testUser"})
 			b.StartTimer()
 			handler.ServeHTTP(w, request)
 			_ = w.Result().Body.Close()
