@@ -15,7 +15,7 @@ import (
 )
 
 func BenchmarkAPIUserExpandAPI(b *testing.B) {
-	cfg := &config.Config{ServerAddress: "localhost:8080", BaseURL: "http://localhost:8080/"}
+	cfg := &config.Config{ServerAddress: "localhost:8080", BaseURL: "http://localhost:8080"}
 	dbURL := os.Getenv("DATABASE_DSN")
 	repo, err := storage.NewPostgresMockRepo(dbURL)
 	require.NoError(b, err)

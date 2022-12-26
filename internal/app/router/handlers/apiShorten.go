@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/Mldlr/url-shortener/internal/app/router/middleware"
 	"net/http"
+	"strings"
 
 	"github.com/Mldlr/url-shortener/internal/app/config"
 	"github.com/Mldlr/url-shortener/internal/app/models"
@@ -48,7 +49,7 @@ func APIShorten(repo storage.Repository, c *config.Config) http.HandlerFunc {
 		} else {
 			w.WriteHeader(http.StatusCreated)
 		}
-		if err := json.NewEncoder(w).Encode(models.Response{Result: c.BaseURL + body.ShortURL}); err != nil {
+		if err := json.NewEncoder(w).Encode(models.Response{Result: strings.Join([]string{c.BaseURL, body.ShortURL}, "/")}); err != nil {
 			http.Error(w, "error building the response", http.StatusInternalServerError)
 			return
 		}

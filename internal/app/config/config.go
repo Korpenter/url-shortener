@@ -8,7 +8,7 @@ import (
 
 type Config struct {
 	ServerAddress string `envconfig:"SERVER_ADDRESS" default:"localhost:8080"`
-	BaseURL       string `envconfig:"BASE_URL" default:"http://localhost:8080/"`
+	BaseURL       string `envconfig:"BASE_URL" default:"http://localhost:8080"`
 	FileStorage   string `envconfig:"FILE_STORAGE_PATH" default:""`
 	SecretKey     string `envconfig:"URL_SHORTENER_KEY" default:"defaultKeyUrlSHoRtenEr"`
 	PostgresURL   string `envconfig:"DATABASE_DSN" default:""`

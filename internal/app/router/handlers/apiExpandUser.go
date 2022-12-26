@@ -28,7 +28,7 @@ func APIUserExpand(repo storage.Repository, c *config.Config) http.HandlerFunc {
 		}
 		URLItems := make([]models.URLItem, len(urls))
 		for i, v := range urls {
-			shortURL := strings.Join([]string{c.BaseURL, v.ShortURL}, "")
+			shortURL := strings.Join([]string{c.BaseURL, v.ShortURL}, "/")
 			URLItems[i] = models.URLItem{
 				ShortURL:    shortURL,
 				OriginalURL: v.LongURL,

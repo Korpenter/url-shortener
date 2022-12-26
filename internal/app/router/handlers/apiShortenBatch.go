@@ -54,7 +54,7 @@ func APIShortenBatch(repo storage.Repository, c *config.Config) http.HandlerFunc
 			return
 		}
 		for i, v := range urls {
-			shortURL := strings.Join([]string{c.BaseURL, v.ShortURL}, "")
+			shortURL := strings.Join([]string{c.BaseURL, v.ShortURL}, "/")
 			respItems = append(respItems, models.BatchRespItem{
 				CorID:    i,
 				ShortURL: shortURL,

@@ -72,6 +72,9 @@ func (r *PostgresMockRepo) GetByUser(ctx context.Context, userID string) ([]*mod
 	var url models.URL
 	var count int
 	err := r.conn.QueryRow(ctx, mockCountUserURLs, userID).Scan(count)
+	if err != nil {
+		return nil, err
+	}
 	urls := make([]*models.URL, 0, count)
 	rows, err := r.conn.Query(ctx, mockGetByUserQuery, userID)
 	if err != nil {
@@ -103,11 +106,9 @@ func (r *PostgresMockRepo) Add(ctx context.Context, url *models.URL) (bool, erro
 		if errors.Is(err, pgx.ErrNoRows) {
 			duplicates = true
 			err = tx.QueryRow(ctx, mockGetShort, url.LongURL).Scan(&url.ShortURL)
-		} else if err != nil {
-			return false, err
 		}
 	}
-	return duplicates, nil
+	return duplicates, err
 }
 
 func (r *PostgresMockRepo) AddBatch(ctx context.Context, urls map[string]*models.URL) (bool, error) {

@@ -49,7 +49,7 @@ func Shorten(repo storage.Repository, c *config.Config) http.HandlerFunc {
 		} else {
 			w.WriteHeader(http.StatusCreated)
 		}
-		if _, err = io.WriteString(w, strings.Join([]string{c.BaseURL, url.ShortURL}, "")); err != nil {
+		if _, err = io.WriteString(w, strings.Join([]string{c.BaseURL, url.ShortURL}, "/")); err != nil {
 			log.Println(err)
 		}
 	}
