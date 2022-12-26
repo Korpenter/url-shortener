@@ -1,3 +1,4 @@
+// Package encoders provides functions to encode data.
 package encoders
 
 import (
@@ -14,8 +15,10 @@ const (
 // ToRBase62 encodes a number to Base62 string in reversed order
 func ToRBase62(url string) string {
 	sha := sha256.New()
+	// Calculate hash.
 	sha.Write([]byte(url))
 	num := new(big.Int).SetBytes(sha.Sum(nil)).Uint64()
+	// Build string ID.
 	var b strings.Builder
 	b.Grow(64)
 	for num > 0 {

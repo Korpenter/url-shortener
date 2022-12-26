@@ -14,7 +14,7 @@ type mockRepo struct {
 	existingURLs map[string]*models.URL
 }
 
-// NewMockRepo returns a pointer to a new mock repo instance
+// NewMockRepo initializes new test in-memory storage with data.
 func NewMockRepo() *mockRepo {
 	mock := mockRepo{
 		urlsByShort:  make(map[string]*models.URL),
@@ -29,6 +29,7 @@ func NewMockRepo() *mockRepo {
 	return &mock
 }
 
+// Get returns original link by ID or an error if id is not present
 func (r *mockRepo) Get(ctx context.Context, id string) (*models.URL, error) {
 	url, ok := r.urlsByShort[id]
 	if !ok {
@@ -37,6 +38,7 @@ func (r *mockRepo) Get(ctx context.Context, id string) (*models.URL, error) {
 	return url, nil
 }
 
+// Add adds a link to storage.
 func (r *mockRepo) Add(ctx context.Context, url *models.URL) (bool, error) {
 	if v, k := r.existingURLs[url.LongURL]; k {
 		url.ShortURL = v.ShortURL
@@ -48,6 +50,7 @@ func (r *mockRepo) Add(ctx context.Context, url *models.URL) (bool, error) {
 	return false, nil
 }
 
+// AddBatch adds multiple URLs to storage.
 func (r *mockRepo) AddBatch(ctx context.Context, urls map[string]*models.URL) (bool, error) {
 	var duplicates bool
 	for _, v := range urls {
@@ -63,10 +66,12 @@ func (r *mockRepo) AddBatch(ctx context.Context, urls map[string]*models.URL) (b
 	return duplicates, nil
 }
 
+// NewID returns a number to encode as an id
 func (r *mockRepo) NewID(url string) (string, error) {
 	return encoders.ToRBase62(url), nil
 }
 
+// GetByUser finds URLs created by user.
 func (r *mockRepo) GetByUser(ctx context.Context, userID string) ([]*models.URL, error) {
 	s := make([]*models.URL, 0)
 	s = append(s, r.urlsByUser[userID]...)
@@ -76,6 +81,7 @@ func (r *mockRepo) GetByUser(ctx context.Context, userID string) ([]*models.URL,
 	return s, nil
 }
 
+// DeleteURLs delete urls from maps.
 func (r *mockRepo) DeleteURLs(deleteURLs []*models.DeleteURLItem) (int, error) {
 	var n int
 	for _, v := range deleteURLs {
@@ -87,10 +93,12 @@ func (r *mockRepo) DeleteURLs(deleteURLs []*models.DeleteURLItem) (int, error) {
 	return n, nil
 }
 
+// Ping is redundant for in-memory storage.
 func (r *mockRepo) Ping(context.Context) error {
 	return nil
 }
 
+// DeleteRepo deletes repository data.
 func (r *mockRepo) DeleteRepo(context.Context) error {
 	r.urlsByShort = make(map[string]*models.URL)
 	r.urlsByUser = make(map[string][]*models.URL)

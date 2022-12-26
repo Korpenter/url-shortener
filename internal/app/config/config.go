@@ -1,3 +1,4 @@
+// Package config provides a configuration structure for the server and its initialization.
 package config
 
 import (
@@ -6,6 +7,7 @@ import (
 	"github.com/kelseyhightower/envconfig"
 )
 
+// Config represents the configuration options for the server.
 type Config struct {
 	ServerAddress string `envconfig:"SERVER_ADDRESS" default:"localhost:8080"`
 	BaseURL       string `envconfig:"BASE_URL" default:"http://localhost:8080"`
@@ -14,7 +16,8 @@ type Config struct {
 	PostgresURL   string `envconfig:"DATABASE_DSN" default:""`
 }
 
-// NewConfig returns a pointer to a new config instance.
+// NewConfig initializes and returns a new Config struct. It reads
+// environment variables and command-line flags to set the configuration values.
 func NewConfig() *Config {
 	var c Config
 	envconfig.MustProcess("", &c)

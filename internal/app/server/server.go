@@ -8,7 +8,7 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
-// NewServer returns a pointer to a new http.Server instance
+// NewServer initializes and HTTP server
 func NewServer(r chi.Router, c *config.Config) *http.Server {
 	return &http.Server{
 		Handler: r,

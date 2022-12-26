@@ -1,3 +1,4 @@
+// Package router provides router for
 package router
 
 import (
@@ -10,17 +11,22 @@ import (
 	chiMiddleware "github.com/go-chi/chi/v5/middleware"
 )
 
-// NewRouter returns a chi router instance.
+// NewRouter initializes a chi router instance.
 func NewRouter(repo storage.Repository, c *config.Config) chi.Router {
+	// Initialize new loader to handle batch delete requests.
 	deleteLoader := loader.NewDeleteLoader(repo)
 
 	r := chi.NewRouter()
+
+	// Define used middlewares.
 	r.Use(chiMiddleware.Logger)
 	r.Use(chiMiddleware.Recoverer)
 	r.Use(middleware.Decompress)
 	r.Use(middleware.Auth{Config: c}.Authenticate)
 	r.Use(chiMiddleware.AllowContentEncoding("gzip"))
 	r.Use(chiMiddleware.Compress(5, "application/json", "text/plain"))
+
+	// Define routes.
 	r.Mount("/debug", chiMiddleware.Profiler())
 	r.Get("/api/user/urls", handlers.APIUserExpand(repo, c))
 	r.Post("/api/shorten", handlers.APIShorten(repo, c))

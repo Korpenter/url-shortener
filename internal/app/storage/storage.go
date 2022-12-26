@@ -12,7 +12,7 @@ import (
 	"github.com/Mldlr/url-shortener/internal/app/models"
 )
 
-// Repository interface for storage instances
+// Repository is an interface for storage instances
 type Repository interface {
 	Get(ctx context.Context, id string) (*models.URL, error)
 	GetByUser(ctx context.Context, userID string) ([]*models.URL, error)
@@ -24,6 +24,7 @@ type Repository interface {
 	DeleteURLs(deleteURLs []*models.DeleteURLItem) (int, error)
 }
 
+// New initializes a new Repository instance to use as a storage.
 func New(c *config.Config) Repository {
 	if c.PostgresURL != "" {
 		r, err := NewPostgresRepo(c.PostgresURL)

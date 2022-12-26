@@ -33,11 +33,12 @@ const (
 	mockDrop              = `DROP TABLE urls_test`
 )
 
-type PostgresMockRepo struct {
+type postgresMockRepo struct {
 	conn *pgxpool.Pool
 }
 
-func NewPostgresMockRepo(connString string) (*PostgresMockRepo, error) {
+// NewPostgresMockRepo initializes Postgres DB test storage instance from connection string with data.
+func NewPostgresMockRepo(connString string) (*postgresMockRepo, error) {
 	poolConfig, err := pgxpool.ParseConfig(connString)
 	if err != nil {
 		return nil, err
@@ -54,13 +55,14 @@ func NewPostgresMockRepo(connString string) (*PostgresMockRepo, error) {
 	if err != nil {
 		return nil, err
 	}
-	repo := &PostgresMockRepo{conn: conn}
+	repo := &postgresMockRepo{conn: conn}
 	repo.Add(context.Background(), url1)
 	repo.Add(context.Background(), url2)
 	return repo, nil
 }
 
-func (r *PostgresMockRepo) Get(ctx context.Context, id string) (*models.URL, error) {
+// Get returns original link by id or an error if id is not present.
+func (r *postgresMockRepo) Get(ctx context.Context, id string) (*models.URL, error) {
 	var url models.URL
 	err := r.conn.QueryRow(ctx, mockGetQuery, id).Scan(&url.LongURL, &url.Deleted)
 	if err != nil {
@@ -69,7 +71,8 @@ func (r *PostgresMockRepo) Get(ctx context.Context, id string) (*models.URL, err
 	return &url, nil
 }
 
-func (r *PostgresMockRepo) GetByUser(ctx context.Context, userID string) ([]*models.URL, error) {
+// GetByUser finds URLs created by a specific user.
+func (r *postgresMockRepo) GetByUser(ctx context.Context, userID string) ([]*models.URL, error) {
 	var url models.URL
 	var count int
 	err := r.conn.QueryRow(ctx, mockCountUserURLs, userID).Scan(count)
@@ -95,7 +98,8 @@ func (r *PostgresMockRepo) GetByUser(ctx context.Context, userID string) ([]*mod
 	return urls, nil
 }
 
-func (r *PostgresMockRepo) Add(ctx context.Context, url *models.URL) (bool, error) {
+// Add adds a link to db and returns assigned id
+func (r *postgresMockRepo) Add(ctx context.Context, url *models.URL) (bool, error) {
 	var duplicates bool
 	tx, err := r.conn.Begin(ctx)
 	if err != nil {
@@ -112,7 +116,8 @@ func (r *PostgresMockRepo) Add(ctx context.Context, url *models.URL) (bool, erro
 	return duplicates, err
 }
 
-func (r *PostgresMockRepo) AddBatch(ctx context.Context, urls map[string]*models.URL) (bool, error) {
+// AddBatch adds multiple URLs to repository.
+func (r *postgresMockRepo) AddBatch(ctx context.Context, urls map[string]*models.URL) (bool, error) {
 	var duplicates bool
 	tx, err := r.conn.Begin(ctx)
 	if err != nil {
@@ -131,11 +136,13 @@ func (r *PostgresMockRepo) AddBatch(ctx context.Context, urls map[string]*models
 	return duplicates, err
 }
 
-func (r *PostgresMockRepo) NewID(url string) (string, error) {
+// DeleteURLs delete urls from cache.
+func (r *postgresMockRepo) NewID(url string) (string, error) {
 	return encoders.ToRBase62(url), nil
 }
 
-func (r *PostgresMockRepo) DeleteURLs(deleteURLs []*models.DeleteURLItem) (int, error) {
+// NewID calculates a string to use as an ID.
+func (r *postgresMockRepo) DeleteURLs(deleteURLs []*models.DeleteURLItem) (int, error) {
 	ctx := context.Background()
 	tx, err := r.conn.Begin(ctx)
 	var n int
@@ -155,11 +162,13 @@ func (r *PostgresMockRepo) DeleteURLs(deleteURLs []*models.DeleteURLItem) (int, 
 	return n, err
 }
 
-func (r *PostgresMockRepo) Ping(ctx context.Context) error {
+// Ping checks if file is available.
+func (r *postgresMockRepo) Ping(ctx context.Context) error {
 	return r.conn.Ping(ctx)
 }
 
-func (r *PostgresMockRepo) DeleteRepo(ctx context.Context) error {
+// DeleteRepo deletes repository tables.
+func (r *postgresMockRepo) DeleteRepo(ctx context.Context) error {
 	_, err := r.conn.Exec(ctx, mockDrop)
 	if err != nil {
 		return err

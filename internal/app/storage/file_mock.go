@@ -19,7 +19,6 @@ type mockFileRepo struct {
 	encoder      json.Encoder
 }
 
-// NewMockFileRepo itiates new mock file repo, creating a file and adding a record to it
 func newMockFileRepo() (*mockFileRepo, error) {
 	urls := []models.URL{
 		{
@@ -51,7 +50,6 @@ func newMockFileRepo() (*mockFileRepo, error) {
 	return &mock, nil
 }
 
-// DeleteMock deletes mock file
 func (r *mockFileRepo) delete() error {
 	err := r.file.Close()
 	if err != nil {
@@ -64,7 +62,6 @@ func (r *mockFileRepo) delete() error {
 	return nil
 }
 
-// Load loads stored url records from file
 func (r *mockFileRepo) load() error {
 	decoder := json.NewDecoder(r.file)
 	u := &models.URL{}
@@ -81,7 +78,6 @@ func (r *mockFileRepo) load() error {
 	return nil
 }
 
-// Get returns original link by id or an error if id is not present
 func (r *mockFileRepo) get(short string) (*models.URL, error) {
 	url, ok := r.cacheByShort[short]
 	if !ok {
@@ -90,7 +86,6 @@ func (r *mockFileRepo) get(short string) (*models.URL, error) {
 	return url, nil
 }
 
-// Add adds a link to db and returns assigned id
 func (r *mockFileRepo) add(longURL, short, userID string) (string, error) {
 	url := &models.URL{ShortURL: short, LongURL: longURL, UserID: userID}
 	r.cacheByShort[short] = url
