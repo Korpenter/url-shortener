@@ -17,8 +17,10 @@ func ExampleShorten() {
 	request := httptest.NewRequest(http.MethodPost, "/", strings.NewReader("github.com"))
 	w := httptest.NewRecorder()
 	r.ServeHTTP(w, request)
-	result, _ := io.ReadAll(w.Result().Body)
-	fmt.Println(string(result))
+	body := w.Result().Body
+	defer body.Close()
+	bodyResult, _ := io.ReadAll(body)
+	fmt.Println(string(bodyResult))
 	// Output:
 	// http://localhost:8080/aAE3t8nGJ9A
 }
@@ -30,8 +32,10 @@ func ExampleAPIShorten() {
 	request := httptest.NewRequest(http.MethodPost, "/api/shorten", strings.NewReader(`{"url":"github.com/"}`))
 	w := httptest.NewRecorder()
 	r.ServeHTTP(w, request)
-	result, _ := io.ReadAll(w.Result().Body)
-	fmt.Println(string(result))
+	body := w.Result().Body
+	defer body.Close()
+	bodyResult, _ := io.ReadAll(body)
+	fmt.Println(string(bodyResult))
 	// Output:
 	// {"result":"http://localhost:8080/GaSgGCXYQ18"}
 
@@ -45,6 +49,7 @@ func ExampleExpand() {
 	w := httptest.NewRecorder()
 	r.ServeHTTP(w, request)
 	result := w.Result().Header.Get("Location")
+	defer w.Result().Body.Close()
 	fmt.Println(result)
 	// Output:
 	// https://github.com/Mldlr/url-shortener/internal/app/utils/encoders
@@ -58,8 +63,10 @@ func ExampleAPIShortenBatch() {
 	request := httptest.NewRequest(http.MethodPost, "/api/shorten/batch", strings.NewReader(payload))
 	w := httptest.NewRecorder()
 	r.ServeHTTP(w, request)
-	result, _ := io.ReadAll(w.Result().Body)
-	fmt.Println(string(result))
+	body := w.Result().Body
+	defer body.Close()
+	bodyResult, _ := io.ReadAll(body)
+	fmt.Println(string(bodyResult))
 	// Output:
 	// [{"correlation_id":"TestCorrelationID1","short_url":"http://localhost:8080/vRveliyDLz8"},{"correlation_id":"TestCorrelationID2","short_url":"http://localhost:8080/BlbEuA4l5GJ"}]
 }
@@ -72,6 +79,7 @@ func ExampleAPIDeleteBatch() {
 	w := httptest.NewRecorder()
 	r.ServeHTTP(w, request)
 	result := w.Result().Status
+	defer w.Result().Body.Close()
 	fmt.Println(result)
 	// Output:
 	// 202 Accepted
@@ -85,6 +93,7 @@ func ExamplePing() {
 	w := httptest.NewRecorder()
 	r.ServeHTTP(w, request)
 	result := w.Result().Status
+	defer w.Result().Body.Close()
 	fmt.Println(result)
 	// Output:
 	// 200 OK
