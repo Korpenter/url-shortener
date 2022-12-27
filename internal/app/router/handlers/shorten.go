@@ -3,7 +3,6 @@ package handlers
 import (
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"strings"
 
@@ -58,7 +57,7 @@ func Shorten(repo storage.Repository, c *config.Config) http.HandlerFunc {
 			w.WriteHeader(http.StatusCreated)
 		}
 		if _, err = io.WriteString(w, strings.Join([]string{c.BaseURL, url.ShortURL}, "/")); err != nil {
-			log.Println(err)
+			http.Error(w, "error building the response", http.StatusInternalServerError)
 		}
 	}
 }
