@@ -1,3 +1,4 @@
+// Package models contains definitions of objects used in url-shortener
 package models
 
 // URL represents a URL object that contains information about a shortened URL.

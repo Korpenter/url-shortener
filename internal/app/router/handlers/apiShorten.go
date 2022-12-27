@@ -37,7 +37,6 @@ func APIShorten(repo storage.Repository, c *config.Config) http.HandlerFunc {
 			http.Error(w, fmt.Sprintf("error getting new id: %v", err), http.StatusInternalServerError)
 			return
 		}
-
 		// Get the user ID from the request.
 		userID, found := middleware.GetUserID(r)
 		if !found {
