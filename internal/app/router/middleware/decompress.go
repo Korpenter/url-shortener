@@ -1,4 +1,3 @@
-// Package middleware provides custom middleware.
 package middleware
 
 import (

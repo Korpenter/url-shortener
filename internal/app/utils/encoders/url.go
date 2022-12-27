@@ -1,4 +1,3 @@
-// Package encoders provides functions to encode data.
 package encoders
 
 import (

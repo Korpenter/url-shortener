@@ -1,4 +1,3 @@
-// Package handlers provides HTTP handlers for the url-shortener.
 package handlers
 
 import (

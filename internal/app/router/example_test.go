@@ -78,8 +78,9 @@ func ExampleAPIDeleteBatch() {
 	request := httptest.NewRequest(http.MethodDelete, "/api/user/urls", strings.NewReader(`["c", "b"]`))
 	w := httptest.NewRecorder()
 	r.ServeHTTP(w, request)
+	body := w.Result().Body
 	result := w.Result().Status
-	defer w.Result().Body.Close()
+	defer body.Close()
 	fmt.Println(result)
 	// Output:
 	// 202 Accepted
