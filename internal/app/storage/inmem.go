@@ -3,31 +3,36 @@ package storage
 import (
 	"context"
 	"fmt"
-	"github.com/Mldlr/url-shortener/internal/app/utils/encoders"
 	"sync"
 
-	"github.com/Mldlr/url-shortener/internal/app/model"
+	"github.com/Mldlr/url-shortener/internal/app/utils/encoders"
+
+	"github.com/Mldlr/url-shortener/internal/app/models"
 )
 
 // InMemRepo is an in-memory url storage
 type InMemRepo struct {
-	existingURLs map[string]*model.URL
-	urlsByShort  map[string]*model.URL
-	urlsByUser   map[string][]*model.URL
+	// existingURLs maps original URLs to their corresponding URL models.
+	existingURLs map[string]*models.URL
+	// urlsByShort maps short URLs to their corresponding URL models.
+	urlsByShort map[string]*models.URL
+	// urlsByUser maps user IDs to their corresponding URL models.
+	urlsByUser map[string][]*models.URL
+	// RWMutex synchronizes access to the FileRepo.
 	sync.RWMutex
 }
 
-// NewInMemRepo returns a pointer to a new repo instance
+// NewInMemRepo initializes new in-memory storage
 func NewInMemRepo() *InMemRepo {
 	return &InMemRepo{
-		urlsByShort:  make(map[string]*model.URL),
-		urlsByUser:   make(map[string][]*model.URL),
-		existingURLs: make(map[string]*model.URL),
+		urlsByShort:  make(map[string]*models.URL),
+		urlsByUser:   make(map[string][]*models.URL),
+		existingURLs: make(map[string]*models.URL),
 	}
 }
 
-// Get returns original link by id or an error if id is not present
-func (r *InMemRepo) Get(ctx context.Context, id string) (*model.URL, error) {
+// Get returns original link by ID or an error if id is not present
+func (r *InMemRepo) Get(ctx context.Context, id string) (*models.URL, error) {
 	r.RLock()
 	defer r.RUnlock()
 	url, ok := r.urlsByShort[id]
@@ -37,24 +42,28 @@ func (r *InMemRepo) Get(ctx context.Context, id string) (*model.URL, error) {
 	return url, nil
 }
 
-// Add adds a link to db and returns assigned id
-func (r *InMemRepo) Add(ctx context.Context, url *model.URL) (bool, error) {
+// Add adds a link to storage.
+func (r *InMemRepo) Add(ctx context.Context, url *models.URL) (bool, error) {
 	r.Lock()
 	defer r.Unlock()
+	// Check for url in map and return if it already exists.
 	if v, k := r.existingURLs[url.LongURL]; k {
 		url.ShortURL = v.ShortURL
 		return true, nil
 	}
+	// Otherwise add url to maps.
 	r.urlsByShort[url.ShortURL] = url
 	r.urlsByUser[url.UserID] = append(r.urlsByUser[url.UserID], url)
 	r.existingURLs[url.LongURL] = url
 	return false, nil
 }
 
-func (r *InMemRepo) AddBatch(ctx context.Context, urls map[string]*model.URL) (bool, error) {
+// AddBatch adds multiple URLs to storage.
+func (r *InMemRepo) AddBatch(ctx context.Context, urls map[string]*models.URL) (bool, error) {
 	r.Lock()
 	defer r.Unlock()
 	var duplicates bool
+	// For each url check if url is in map and add it otherwise.
 	for _, v := range urls {
 		if i, k := r.existingURLs[v.LongURL]; k {
 			duplicates = true
@@ -73,10 +82,12 @@ func (r *InMemRepo) NewID(url string) (string, error) {
 	return encoders.ToRBase62(url), nil
 }
 
-func (r *InMemRepo) GetByUser(ctx context.Context, userID string) ([]*model.URL, error) {
+// GetByUser finds URLs created by user.
+func (r *InMemRepo) GetByUser(ctx context.Context, userID string) ([]*models.URL, error) {
 	r.RLock()
 	defer r.RUnlock()
-	urls := make([]*model.URL, 0)
+	urls := make([]*models.URL, 0)
+	// Get all urls for user.
 	urls = append(urls, r.urlsByUser[userID]...)
 	if len(urls) == 0 {
 		return nil, nil
@@ -84,12 +95,14 @@ func (r *InMemRepo) GetByUser(ctx context.Context, userID string) ([]*model.URL,
 	return urls, nil
 }
 
-func (r *InMemRepo) DeleteURLs(deleteURLs []*model.DeleteURLItem) (int, error) {
+// DeleteURLs delete urls from maps.
+func (r *InMemRepo) DeleteURLs(deleteURLs []*models.DeleteURLItem) (int, error) {
 	r.Lock()
 	defer r.Unlock()
 	var n int
+	// For each of the urls check if the user created this url and delete it if confirmed.
 	for _, v := range deleteURLs {
-		if r.urlsByShort[v.ShortURL].UserID == v.UserID {
+		if _, ok := r.urlsByShort[v.ShortURL]; ok && r.urlsByShort[v.ShortURL].UserID == v.UserID {
 			r.urlsByShort[v.ShortURL].Deleted = true
 			n++
 		}
@@ -97,14 +110,17 @@ func (r *InMemRepo) DeleteURLs(deleteURLs []*model.DeleteURLItem) (int, error) {
 	return n, nil
 }
 
+// Ping is redundant for in-memory storage.
 func (r *InMemRepo) Ping(context.Context) error {
 	return nil
 }
 
+// DeleteRepo deletes repository data.
 func (r *InMemRepo) DeleteRepo(context.Context) error {
 	r.Lock()
 	defer r.Unlock()
-	r.urlsByShort = make(map[string]*model.URL)
-	r.urlsByUser = make(map[string][]*model.URL)
+	// Reallocate maps.
+	r.urlsByShort = make(map[string]*models.URL)
+	r.urlsByUser = make(map[string][]*models.URL)
 	return nil
 }

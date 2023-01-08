@@ -3,16 +3,17 @@ package router
 import (
 	"compress/gzip"
 	"context"
-	"github.com/Mldlr/url-shortener/internal/app/config"
-	"github.com/Mldlr/url-shortener/internal/app/storage"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 	"io"
 	"net/http"
 	"net/http/httptest"
 	"os"
 	"strings"
 	"testing"
+
+	"github.com/Mldlr/url-shortener/internal/app/config"
+	"github.com/Mldlr/url-shortener/internal/app/storage"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 type want struct {
@@ -107,8 +108,8 @@ func TestPostApiCorrect(t *testing.T) {
 			},
 		},
 	}
-	runRouterTest(t, tests, false)
 	runRouterTest(t, tests, true)
+	runRouterTest(t, tests, false)
 }
 
 func TestPostApiIncorrect(t *testing.T) {
@@ -138,8 +139,8 @@ func TestPostApiIncorrect(t *testing.T) {
 			},
 		},
 	}
-	runRouterTest(t, tests, false)
 	runRouterTest(t, tests, true)
+	runRouterTest(t, tests, false)
 }
 
 func TestPostCorrect(t *testing.T) {
@@ -169,8 +170,8 @@ func TestPostCorrect(t *testing.T) {
 			},
 		},
 	}
-	runRouterTest(t, tests, false)
 	runRouterTest(t, tests, true)
+	runRouterTest(t, tests, false)
 }
 
 func TestPostIncorrect(t *testing.T) {
@@ -188,8 +189,8 @@ func TestPostIncorrect(t *testing.T) {
 			},
 		},
 	}
-	runRouterTest(t, tests, false)
 	runRouterTest(t, tests, true)
+	runRouterTest(t, tests, false)
 }
 
 func TestGet(t *testing.T) {
@@ -219,8 +220,8 @@ func TestGet(t *testing.T) {
 			},
 		},
 	}
-	runRouterTest(t, tests, false)
 	runRouterTest(t, tests, true)
+	runRouterTest(t, tests, false)
 }
 
 func TestMethod(t *testing.T) {
@@ -250,8 +251,8 @@ func TestMethod(t *testing.T) {
 			},
 		},
 	}
-	runRouterTest(t, tests, false)
 	runRouterTest(t, tests, true)
+	runRouterTest(t, tests, false)
 }
 
 func TestApiPostCompressed(t *testing.T) {
@@ -283,8 +284,8 @@ func TestApiPostCompressed(t *testing.T) {
 			},
 		},
 	}
-	runRouterTest(t, tests, false)
 	runRouterTest(t, tests, true)
+	runRouterTest(t, tests, false)
 }
 
 func TestBatchCorrect(t *testing.T) {
@@ -303,8 +304,8 @@ func TestBatchCorrect(t *testing.T) {
 			},
 		},
 	}
-	runRouterTest(t, tests, false)
 	runRouterTest(t, tests, true)
+	runRouterTest(t, tests, false)
 }
 
 func TestBatchIncorrect(t *testing.T) {
@@ -323,8 +324,8 @@ func TestBatchIncorrect(t *testing.T) {
 			},
 		},
 	}
-	runRouterTest(t, tests, false)
 	runRouterTest(t, tests, true)
+	runRouterTest(t, tests, false)
 }
 
 func TestPostDuplicate(t *testing.T) {
@@ -419,7 +420,7 @@ func TestApiDuplicate(t *testing.T) {
 func TestApiBatchDuplicate(t *testing.T) {
 	tests := []test{
 		{
-			name:        "Correct batch POST api.",
+			name:        "Correct batch duplicate POST api.",
 			compression: "gzip",
 			method:      http.MethodPost,
 			request:     "/api/shorten/batch",

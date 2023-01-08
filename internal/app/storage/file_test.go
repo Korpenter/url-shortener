@@ -3,7 +3,7 @@ package storage
 import (
 	"testing"
 
-	"github.com/Mldlr/url-shortener/internal/app/model"
+	"github.com/Mldlr/url-shortener/internal/app/models"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -11,23 +11,23 @@ import (
 func TestFileRepo(t *testing.T) {
 	tests := []struct {
 		name        string
-		urls        []model.URL
-		wantContain []model.URL
+		urls        []models.URL
+		wantContain []models.URL
 	}{
 		{
 			name: "Load preexisting file, No addition",
-			wantContain: []model.URL{
+			wantContain: []models.URL{
 				{ShortURL: "1", LongURL: "yandex.ru", UserID: "Helloworld"},
 				{ShortURL: "2", LongURL: "hero.ru", UserID: "Helloworld"},
 			},
 		},
 		{
 			name: " Add links and Load preexisting file.",
-			urls: []model.URL{
+			urls: []models.URL{
 				{ShortURL: "3", LongURL: "hell.ru", UserID: "Anotherone"},
 				{ShortURL: "4", LongURL: "nvidia.ru", UserID: "Anotherone"},
 			},
-			wantContain: []model.URL{
+			wantContain: []models.URL{
 				{ShortURL: "3", LongURL: "hell.ru", UserID: "Anotherone"},
 				{ShortURL: "4", LongURL: "nvidia.ru", UserID: "Anotherone"},
 			},
@@ -44,7 +44,7 @@ func TestFileRepo(t *testing.T) {
 			}
 			err = fRepo.load()
 			require.NoError(t, err)
-			var urls []model.URL
+			var urls []models.URL
 			for _, value := range fRepo.cacheByShort {
 				urls = append(urls, *value)
 			}
