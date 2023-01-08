@@ -2,12 +2,13 @@ package router
 
 import (
 	"fmt"
-	"github.com/Mldlr/url-shortener/internal/app/config"
-	"github.com/Mldlr/url-shortener/internal/app/storage"
 	"io"
 	"net/http"
 	"net/http/httptest"
 	"strings"
+
+	"github.com/Mldlr/url-shortener/internal/app/config"
+	"github.com/Mldlr/url-shortener/internal/app/storage"
 )
 
 func ExampleShorten() {

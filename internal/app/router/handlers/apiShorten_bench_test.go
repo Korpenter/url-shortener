@@ -1,12 +1,12 @@
 package handlers
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"os"
-	"strings"
 	"testing"
 
 	"github.com/Mldlr/url-shortener/internal/app/config"
@@ -34,7 +34,7 @@ func BenchmarkShortenAPI(b *testing.B) {
 		for i := 0; i < b.N; i++ {
 			b.StopTimer()
 			body, _ := json.Marshal(models.URL{LongURL: fmt.Sprint(i) + ".ru"})
-			request := httptest.NewRequest(http.MethodPost, "/api/shorten", strings.NewReader(string(body)))
+			request := httptest.NewRequest(http.MethodPost, "/api/shorten", bytes.NewReader(body))
 			request.Header = map[string][]string{"Cookie": {"user_id=user1", "signature=60e8d0babc58e796ac223a64b5e68b998de7d3b203bc8a859bc0ec15ee66f5f9"}}
 			w := httptest.NewRecorder()
 			b.StartTimer()

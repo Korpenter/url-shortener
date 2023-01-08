@@ -1,13 +1,13 @@
 package handlers
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"os"
-	"strings"
 	"testing"
 
 	"github.com/Mldlr/url-shortener/internal/app/models"
@@ -25,7 +25,7 @@ func BenchmarkAPIDeleteBatchAPI(b *testing.B) {
 		repo, err = storage.NewPostgresMockRepo(dbURL)
 		require.NoError(b, err)
 	} else {
-		repo = storage.NewMockRepo()
+		repo = storage.NewInMemRepo()
 	}
 	defer repo.DeleteRepo(context.Background())
 	handler := APIDeleteBatch(loader.NewDeleteLoader(repo))
@@ -44,11 +44,11 @@ func BenchmarkAPIDeleteBatchAPI(b *testing.B) {
 	b.ResetTimer()
 	b.Run("APIDeleteBatch", func(b *testing.B) {
 		b.ReportAllocs()
-		for i := 0; i < 1000; i++ {
+		body, err := json.Marshal(deleteURLs)
+		for i := 0; i < b.N; i++ {
 			b.StopTimer()
-			body, err := json.Marshal(deleteURLs)
 			require.NoError(b, err)
-			request := httptest.NewRequest(http.MethodPost, "/api/shorten/batch", strings.NewReader(string(body)))
+			request := httptest.NewRequest(http.MethodPost, "/api/shorten/batch", bytes.NewReader(body))
 			request.Header = map[string][]string{"Cookie": {"user_id=user1", "signature=60e8d0babc58e796ac223a64b5e68b998de7d3b203bc8a859bc0ec15ee66f5f9"}}
 			w := httptest.NewRecorder()
 			b.StartTimer()
