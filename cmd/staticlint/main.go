@@ -5,6 +5,8 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/Mldlr/url-shortener/internal/analyzers"
+
 	critic "github.com/go-critic/go-critic/checkers/analyzer"
 	"golang.org/x/tools/go/analysis"
 	"golang.org/x/tools/go/analysis/multichecker"
@@ -47,6 +49,7 @@ func main() {
 		shadow.Analyzer,
 		structtag.Analyzer,
 		critic.Analyzer,
+		analyzers.Analyzer,
 	}
 	// Create a map of the enabled analyzers.
 	checks := make(map[string]bool)
