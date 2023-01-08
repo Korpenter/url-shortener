@@ -12,8 +12,10 @@
 *.out
 
 # Binaries
-../cunba/cmd/shortener/main
-../cunba/cmd/shortener/shortener
+./cmd/shortener/main
+./cmd/shortener/shortener
+./cmd/shortener/staticlint
+./cmd/shortener/vegeta_load
 
 # Dependency directories (remove the comment below to include it)
 vendor/
