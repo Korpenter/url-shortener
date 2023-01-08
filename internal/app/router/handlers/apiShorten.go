@@ -21,7 +21,7 @@ func APIShorten(repo storage.Repository, c *config.Config) http.HandlerFunc {
 		// Decode the request body into a URL struct.
 		var body *models.URL
 		var err error
-		if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		if err = json.NewDecoder(r.Body).Decode(&body); err != nil {
 			http.Error(w, "error reading request", http.StatusBadRequest)
 			return
 		}

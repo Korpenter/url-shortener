@@ -56,7 +56,7 @@ func (r *FileRepo) Load() error {
 		} else if err != nil {
 			return fmt.Errorf("error decoding file : %v", err)
 		}
-		//Add decoded URL to maps
+		// Add decoded URL to maps
 		url := &models.URL{ShortURL: u.ShortURL, LongURL: u.LongURL}
 		r.cacheByShort[u.ShortURL] = url
 		r.cacheByUser[u.UserID] = append(r.cacheByUser[u.UserID], url)
