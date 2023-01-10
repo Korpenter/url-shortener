@@ -10,12 +10,14 @@ import (
 	"github.com/Mldlr/url-shortener/internal/app/storage"
 )
 
+// Build info
 var (
 	buildVersion string
 	buildDate    string
 	buildCommit  string
 )
 
+// NA is the string output if build info is not set
 const NA string = "N/A"
 
 func main() {
