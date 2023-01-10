@@ -7,10 +7,6 @@ import (
 	"github.com/kelseyhightower/envconfig"
 )
 
-var buildDate = "NA"
-var buildVersion = "NA"
-var buildCommit = "NA"
-
 // Config represents the configuration options for the server.
 type Config struct {
 	ServerAddress string `envconfig:"SERVER_ADDRESS" default:"localhost:8080"`
