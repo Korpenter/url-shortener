@@ -1,7 +1,6 @@
 package analyzers
 
 import (
-	"fmt"
 	"go/ast"
 
 	"golang.org/x/tools/go/analysis"
@@ -31,7 +30,7 @@ func run(pass *analysis.Pass) (interface{}, error) {
 				}
 				pass.Report(analysis.Diagnostic{
 					Pos:     call.Pos(),
-					Message: fmt.Sprintf("os.Exit(...) call in main"),
+					Message: "os.Exit(...) call in main",
 				})
 			}
 			return true
