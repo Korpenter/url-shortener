@@ -49,11 +49,10 @@ func ExampleExpand() {
 	request := httptest.NewRequest(http.MethodGet, "/1", nil)
 	w := httptest.NewRecorder()
 	r.ServeHTTP(w, request)
-	result := w.Result().Header.Get("Location")
-	defer w.Result().Body.Close()
-	fmt.Println(result)
+	header := w.Header()
+	fmt.Println(header["Location"])
 	// Output:
-	// https://github.com/Mldlr/url-shortener/internal/app/utils/encoders
+	// [https://github.com/Mldlr/url-shortener/internal/app/utils/encoders]
 }
 
 func ExampleAPIShortenBatch() {
@@ -79,12 +78,10 @@ func ExampleAPIDeleteBatch() {
 	request := httptest.NewRequest(http.MethodDelete, "/api/user/urls", strings.NewReader(`["c", "b"]`))
 	w := httptest.NewRecorder()
 	r.ServeHTTP(w, request)
-	body := w.Result().Body
-	result := w.Result().Status
-	defer body.Close()
-	fmt.Println(result)
+	status := w.Code
+	fmt.Println(status)
 	// Output:
-	// 202 Accepted
+	// 202
 }
 
 func ExamplePing() {
@@ -94,9 +91,8 @@ func ExamplePing() {
 	request := httptest.NewRequest(http.MethodGet, "/ping", nil)
 	w := httptest.NewRecorder()
 	r.ServeHTTP(w, request)
-	result := w.Result().Status
-	defer w.Result().Body.Close()
-	fmt.Println(result)
+	status := w.Code
+	fmt.Println(status)
 	// Output:
-	// 200 OK
+	// 200
 }
