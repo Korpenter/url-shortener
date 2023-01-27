@@ -2,13 +2,12 @@ package main
 
 import (
 	"fmt"
-	"log"
-	"time"
-
 	"github.com/Mldlr/url-shortener/internal/app/config"
 	"github.com/Mldlr/url-shortener/internal/app/router"
 	"github.com/Mldlr/url-shortener/internal/app/server"
 	"github.com/Mldlr/url-shortener/internal/app/storage"
+	"log"
+	"time"
 )
 
 // Build info

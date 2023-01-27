@@ -14,7 +14,7 @@ type Config struct {
 	FileStorage   string `envconfig:"FILE_STORAGE_PATH" default:""`
 	SecretKey     []byte `envconfig:"URL_SHORTENER_KEY" default:"defaultKeyUrlSHoRtenEr"`
 	PostgresURL   string `envconfig:"DATABASE_DSN" default:""`
-	EnableHttps   bool   `envconfig:"ENABLE_HTTPS" default:"false"`
+	EnableHTTPS   bool   `envconfig:"ENABLE_HTTPS" default:"false"`
 	CertFile      string `envconfig:"TLS_CERT_FILE" default:"cert.pem"`
 	KeyFile       string `envconfig:"TLS_KEY_FILE" default:"key.pem"`
 }
@@ -28,13 +28,20 @@ func NewConfig() *Config {
 	flag.StringVar(&c.BaseURL, "b", c.BaseURL, "base url address")
 	flag.StringVar(&c.FileStorage, "f", c.FileStorage, "storage path")
 	flag.StringVar(&c.PostgresURL, "d", c.PostgresURL, "postgres url")
-	flag.BoolVar(&c.EnableHttps, "s", c.EnableHttps, "enable https")
+	flag.BoolVar(&c.EnableHTTPS, "s", c.EnableHTTPS, "enable https")
 	flag.StringVar(&c.CertFile, "c", c.CertFile, "tls cert file path")
 	flag.StringVar(&c.KeyFile, "t", c.KeyFile, "tls key file path")
 	key := flag.String("k", "", "key")
+	flag.Parse()
+	
+	if c.EnableHTTPS {
+		c.BaseURL = "https://" + c.ServerAddress
+	} else {
+		c.BaseURL = "http://" + c.ServerAddress
+	}
+
 	if *key != "" {
 		c.SecretKey = []byte(*key)
 	}
-	flag.Parse()
 	return &c
 }

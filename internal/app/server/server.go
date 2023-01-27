@@ -14,12 +14,14 @@ import (
 	"time"
 )
 
+// Server is the structure to wrap http server config and shutdown channel for graceful shutdown.
 type Server struct {
 	cfg              *config.Config
 	srv              http.Server
 	shutdownFinished chan struct{}
 }
 
+// NewServer creates a new server instance
 func NewServer(r chi.Router, c *config.Config) *Server {
 	return &Server{
 		cfg: c,
@@ -31,13 +33,14 @@ func NewServer(r chi.Router, c *config.Config) *Server {
 	}
 }
 
+// Run starts the server
 func (s *Server) Run() {
 	var err error
 	if s.shutdownFinished == nil {
 		s.shutdownFinished = make(chan struct{})
 	}
 
-	if s.cfg.EnableHttps {
+	if s.cfg.EnableHTTPS {
 		certFiles := []string{s.cfg.CertFile, s.cfg.KeyFile}
 		for _, file := range certFiles {
 			if _, err := os.Stat(file); err != nil {
@@ -62,6 +65,7 @@ func (s *Server) Run() {
 	log.Println("shutdown finished")
 }
 
+// WaitForExitingSignal waits for a signal to exit the server and shutdowns it
 func (s *Server) WaitForExitingSignal(timeout time.Duration) {
 	var waiter = make(chan os.Signal, 1)
 	signal.Notify(waiter, syscall.SIGTERM, syscall.SIGINT)

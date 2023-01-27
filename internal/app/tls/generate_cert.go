@@ -16,15 +16,14 @@ import (
 	"github.com/Mldlr/url-shortener/internal/app/config"
 )
 
+// GenerateCert generates new pair of tls certificate and key and writes them to .pem files.
 func GenerateCert(c *config.Config) error {
-	// Generate private key.
 	_, priv, err := ed25519.GenerateKey(rand.Reader)
 	if err != nil {
 		err = fmt.Errorf("failed to generate private key: %v", err)
 		return err
 	}
 
-	// Generate serial number for certificate template.
 	serialNumberLimit := new(big.Int).Lsh(big.NewInt(1), 128)
 	serialNumber, err := rand.Int(rand.Reader, serialNumberLimit)
 	if err != nil {
@@ -32,7 +31,6 @@ func GenerateCert(c *config.Config) error {
 		return err
 	}
 
-	// Create certificate template.
 	template := &x509.Certificate{
 		SerialNumber: serialNumber,
 		Subject: pkix.Name{
