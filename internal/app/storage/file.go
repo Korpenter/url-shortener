@@ -144,8 +144,8 @@ func (r *FileRepo) DeleteURLs(deleteURLs []*models.DeleteURLItem) (int, error) {
 }
 
 func (r *FileRepo) update() {
-	r.Lock
-	defer r.Unlock
+	r.Lock()
+	defer r.Unlock()
 	r.updateFile()
 }
 

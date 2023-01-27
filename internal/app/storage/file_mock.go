@@ -109,7 +109,7 @@ func (r *mockFileRepo) addBatch(urls []models.URL) error {
 	return nil
 }
 
-func (r *FileRepo) update() {
+func (r *mockFileRepo) update() {
 	r.updateFile()
 }
 
