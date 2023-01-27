@@ -2,8 +2,9 @@ package tls
 
 import (
 	"bytes"
-	"crypto/ed25519"
 	"crypto/rand"
+	"crypto/rsa"
+	"crypto/sha1"
 	"crypto/x509"
 	"crypto/x509/pkix"
 	"encoding/pem"
@@ -16,9 +17,9 @@ import (
 	"github.com/Mldlr/url-shortener/internal/app/config"
 )
 
-// GenerateCert generates new pair of tls certificate and key and writes them to .pem files.
+// GenerateCert generates a new pair of tls certificate and key and writes them to .pem files.
 func GenerateCert(c *config.Config) error {
-	_, priv, err := ed25519.GenerateKey(rand.Reader)
+	priv, err := rsa.GenerateKey(rand.Reader, 2048)
 	if err != nil {
 		err = fmt.Errorf("failed to generate private key: %v", err)
 		return err
@@ -31,6 +32,10 @@ func GenerateCert(c *config.Config) error {
 		return err
 	}
 
+	keyBytes := x509.MarshalPKCS1PublicKey(&priv.PublicKey)
+	keyHash := sha1.Sum(keyBytes)
+	ski := keyHash[:]
+
 	template := &x509.Certificate{
 		SerialNumber: serialNumber,
 		Subject: pkix.Name{
@@ -39,7 +44,7 @@ func GenerateCert(c *config.Config) error {
 		IPAddresses:  []net.IP{net.IPv4(127, 0, 0, 1), net.IPv6loopback},
 		NotBefore:    time.Now(),
 		NotAfter:     time.Now().AddDate(1, 0, 0),
-		SubjectKeyId: []byte{1, 2, 3, 4, 6},
+		SubjectKeyId: ski,
 		ExtKeyUsage:  []x509.ExtKeyUsage{x509.ExtKeyUsageServerAuth},
 		KeyUsage:     x509.KeyUsageDigitalSignature,
 	}
