@@ -33,7 +33,7 @@ func NewConfig() *Config {
 	flag.StringVar(&c.KeyFile, "t", c.KeyFile, "tls key file path")
 	key := flag.String("k", "", "key")
 	flag.Parse()
-	
+
 	if c.EnableHTTPS {
 		c.BaseURL = "https://" + c.ServerAddress
 	} else {
