@@ -54,7 +54,7 @@ func New(c *config.Config) Repository {
 		}
 		s := gocron.NewScheduler(time.UTC)
 		s.Every(1).Minutes().Do(func() {
-			r.updateFile()
+			r.update()
 		})
 		s.StartAsync()
 		return r

@@ -125,7 +125,7 @@ func (r *InMemRepo) DeleteRepo(context.Context) error {
 	return nil
 }
 
-// Close closes connection to db
+// Close in not implemented for inmem
 func (r *InMemRepo) Close() error {
 	return nil
 }
