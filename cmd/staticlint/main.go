@@ -53,23 +53,23 @@ func main() {
 		useStdLib.New(),
 	}
 	// Create a map of the enabled analyzers.
-	checks := make(map[string]bool)
+	checks := make(map[string]struct{}, len(cfg.Staticcheck))
 	for _, v := range cfg.Staticcheck {
-		checks[v] = true
+		checks[v] = struct{}{}
 	}
 	// Add enabled analyzers to the list of analyzers to run.
 	for _, v := range staticcheck.Analyzers {
-		if checks[v.Analyzer.Name] {
+		if _, ok := checks[v.Analyzer.Name]; ok {
 			mychecks = append(mychecks, v.Analyzer)
 		}
 	}
 	for _, v := range simple.Analyzers {
-		if checks[v.Analyzer.Name] {
+		if _, ok := checks[v.Analyzer.Name]; ok {
 			mychecks = append(mychecks, v.Analyzer)
 		}
 	}
 	for _, v := range stylecheck.Analyzers {
-		if checks[v.Analyzer.Name] {
+		if _, ok := checks[v.Analyzer.Name]; ok {
 			mychecks = append(mychecks, v.Analyzer)
 		}
 	}
