@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"time"
 
 	"github.com/Mldlr/url-shortener/internal/app/config"
 	"github.com/Mldlr/url-shortener/internal/app/router"
@@ -39,5 +40,6 @@ func main() {
 	r := router.NewRouter(repo, cfg)
 	s := server.NewServer(r, cfg)
 	log.Printf("Starting with cfg: %v", cfg)
-	log.Fatal(s.ListenAndServe())
+	go s.WaitForExitingSignal(15 * time.Second)
+	s.Run()
 }
