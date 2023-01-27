@@ -51,7 +51,7 @@ func NewConfig() *Config {
 		}
 	}
 	if c.EnableHTTPS {
-		strings.Replace(c.BaseURL, "http://", "https://", 1)
+		c.BaseURL = strings.Replace(c.BaseURL, "http://", "https://", 1)
 	}
 	if *key != "" {
 		c.SecretKey = []byte(*key)
