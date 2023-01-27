@@ -145,3 +145,13 @@ func (r *mockFileRepo) ping() error {
 	_, err := os.Stat(r.file.Name())
 	return err
 }
+
+// Close closes connection to db
+func (r *mockFileRepo) Close() error {
+	r.updateFile()
+	err := r.file.Close()
+	if err != nil {
+		return fmt.Errorf("error closing file : %v", err)
+	}
+	return err
+}

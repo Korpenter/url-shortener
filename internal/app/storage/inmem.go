@@ -124,3 +124,8 @@ func (r *InMemRepo) DeleteRepo(context.Context) error {
 	r.urlsByUser = make(map[string][]*models.URL)
 	return nil
 }
+
+// Close closes connection to db
+func (r *InMemRepo) Close() error {
+	return nil
+}

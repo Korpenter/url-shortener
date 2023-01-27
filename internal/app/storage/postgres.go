@@ -173,3 +173,9 @@ func (r *PostgresRepo) DeleteRepo(ctx context.Context) error {
 	}
 	return nil
 }
+
+// Close closes connection to db
+func (r *PostgresRepo) Close() error {
+	r.conn.Close()
+	return nil
+}

@@ -29,6 +29,7 @@ func NewConfig() *Config {
 	var c Config
 	configFile := os.Getenv("CONFIG")
 	envconfig.MustProcess("", &c)
+
 	flag.StringVar(&c.ServerAddress, "a", c.ServerAddress, "server address")
 	flag.StringVar(&c.BaseURL, "b", c.BaseURL, "base url address")
 	flag.StringVar(&c.FileStorage, "f", c.FileStorage, "storage path")
@@ -39,6 +40,7 @@ func NewConfig() *Config {
 	flag.StringVar(&configFile, "c", configFile, "path to config file")
 	key := flag.String("k", "", "key")
 	flag.Parse()
+
 	if configFile != "" {
 		bytes, err := os.ReadFile(configFile)
 		if err != nil {
@@ -47,9 +49,10 @@ func NewConfig() *Config {
 
 		err = json.Unmarshal(bytes, &c)
 		if err != nil {
-			log.Fatalf("failed to decode cfg from file: %v", err)
+			log.Fatalf("failed to marshal cfg from file: %v", err)
 		}
 	}
+
 	if c.EnableHTTPS {
 		c.BaseURL = strings.Replace(c.BaseURL, "http://", "https://", 1)
 	}

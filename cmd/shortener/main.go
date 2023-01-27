@@ -40,6 +40,6 @@ func main() {
 	r := router.NewRouter(repo, cfg)
 	s := server.NewServer(r, cfg)
 	log.Printf("Starting with cfg: %v", cfg)
-	go s.WaitForExitingSignal(15 * time.Second)
+	go s.WaitForExitingSignal(15*time.Second, repo)
 	s.Run()
 }

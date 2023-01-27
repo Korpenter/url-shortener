@@ -187,3 +187,15 @@ func (r *FileRepo) DeleteRepo(ctx context.Context) error {
 	}
 	return nil
 }
+
+// Close closes connection to db
+func (r *FileRepo) Close() error {
+	r.Lock()
+	defer r.Unlock()
+	r.updateFile()
+	err := r.file.Close()
+	if err != nil {
+		return fmt.Errorf("error closing file : %v", err)
+	}
+	return err
+}

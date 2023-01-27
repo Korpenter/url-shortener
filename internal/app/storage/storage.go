@@ -23,6 +23,7 @@ type Repository interface {
 	Ping(ctx context.Context) error
 	DeleteRepo(ctx context.Context) error
 	DeleteURLs(deleteURLs []*models.DeleteURLItem) (int, error)
+	Close() error
 }
 
 // New initializes a new Repository instance to use as a storage.

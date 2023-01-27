@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/Mldlr/url-shortener/internal/app/config"
+	"github.com/Mldlr/url-shortener/internal/app/storage"
 	"github.com/Mldlr/url-shortener/internal/app/tls"
 	"github.com/go-chi/chi/v5"
 )
@@ -67,14 +68,21 @@ func (s *Server) Run() {
 }
 
 // WaitForExitingSignal waits for a signal to exit the server and shutdowns it
-func (s *Server) WaitForExitingSignal(timeout time.Duration) {
+func (s *Server) WaitForExitingSignal(timeout time.Duration, r storage.Repository) {
 	var waiter = make(chan os.Signal, 1)
-	signal.Notify(waiter, syscall.SIGTERM, syscall.SIGINT)
+	signal.Notify(waiter, syscall.SIGTERM, syscall.SIGINT, syscall.SIGQUIT)
 
 	<-waiter
 
 	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()
+
+	if r.Close() != nil {
+		if err := r.Close(); err != nil {
+			log.Printf("failed to close repo: %v", err)
+		}
+	}
+
 	err := s.srv.Shutdown(ctx)
 	if err != nil {
 		log.Println("shutting down: " + err.Error())

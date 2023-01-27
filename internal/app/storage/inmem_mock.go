@@ -104,3 +104,8 @@ func (r *mockRepo) DeleteRepo(context.Context) error {
 	r.urlsByUser = make(map[string][]*models.URL)
 	return nil
 }
+
+// Close closes connection to db
+func (r *mockRepo) Close() error {
+	return nil
+}
