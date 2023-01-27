@@ -3,15 +3,16 @@ package server
 import (
 	"context"
 	"fmt"
-	"github.com/Mldlr/url-shortener/internal/app/config"
-	"github.com/Mldlr/url-shortener/internal/app/tls"
-	"github.com/go-chi/chi/v5"
 	"log"
 	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
+
+	"github.com/Mldlr/url-shortener/internal/app/config"
+	"github.com/Mldlr/url-shortener/internal/app/tls"
+	"github.com/go-chi/chi/v5"
 )
 
 // Server is the structure to wrap http server config and shutdown channel for graceful shutdown.
