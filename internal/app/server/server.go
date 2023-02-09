@@ -2,6 +2,7 @@ package server
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
 	"net/http"
@@ -58,7 +59,7 @@ func (s *Server) Run() {
 		err = s.srv.ListenAndServe()
 	}
 
-	if err != nil && err != http.ErrServerClosed {
+	if err != nil && !errors.Is(err, http.ErrServerClosed) {
 		log.Fatalf("unexpected error starting server %v", err)
 	}
 
@@ -77,10 +78,8 @@ func (s *Server) WaitForExitingSignal(timeout time.Duration, r storage.Repositor
 	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()
 
-	if r.Close() != nil {
-		if err := r.Close(); err != nil {
-			log.Printf("failed to close repo: %v", err)
-		}
+	if err := r.Close(); err != nil {
+		log.Printf("failed to close repo: %v", err)
 	}
 
 	err := s.srv.Shutdown(ctx)

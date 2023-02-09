@@ -21,6 +21,7 @@ type Config struct {
 	EnableHTTPS   bool   `envconfig:"ENABLE_HTTPS" default:"false" json:"enable_https"`
 	CertFile      string `envconfig:"TLS_CERT_FILE" default:"cert.pem" json:"cert_file"`
 	KeyFile       string `envconfig:"TLS_KEY_FILE" default:"key.pem" json:"key_file"`
+	TrustedSubnet string `envconfig:"TRUSTED_SUBNET" default:"" json:"trusted_subnet"`
 }
 
 // NewConfig initializes and returns a new Config struct. It reads
