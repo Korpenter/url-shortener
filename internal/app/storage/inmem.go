@@ -124,3 +124,8 @@ func (r *InMemRepo) DeleteRepo(context.Context) error {
 	r.urlsByUser = make(map[string][]*models.URL)
 	return nil
 }
+
+// Close in not implemented for inmem
+func (r *InMemRepo) Close() error {
+	return nil
+}

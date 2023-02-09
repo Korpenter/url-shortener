@@ -143,10 +143,14 @@ func (r *FileRepo) DeleteURLs(deleteURLs []*models.DeleteURLItem) (int, error) {
 	return n, nil
 }
 
-// updateFile updates file contents from cache.
-func (r *FileRepo) updateFile() {
+func (r *FileRepo) update() {
 	r.Lock()
 	defer r.Unlock()
+	r.updateFile()
+}
+
+// updateFile updates file contents from cache.
+func (r *FileRepo) updateFile() {
 	log.Println("starting file update")
 	// Truncate file
 	err := r.file.Truncate(0)
@@ -184,6 +188,18 @@ func (r *FileRepo) DeleteRepo(ctx context.Context) error {
 	err = os.Remove(r.file.Name())
 	if err != nil {
 		return fmt.Errorf("error deleting file : %v", err)
+	}
+	return nil
+}
+
+// Close closes file
+func (r *FileRepo) Close() error {
+	r.Lock()
+	defer r.Unlock()
+	r.updateFile()
+	err := r.file.Close()
+	if err != nil {
+		return fmt.Errorf("error closing file : %v", err)
 	}
 	return nil
 }

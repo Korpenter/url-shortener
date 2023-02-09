@@ -23,6 +23,7 @@ type Repository interface {
 	Ping(ctx context.Context) error
 	DeleteRepo(ctx context.Context) error
 	DeleteURLs(deleteURLs []*models.DeleteURLItem) (int, error)
+	Close() error
 }
 
 // New initializes a new Repository instance to use as a storage.
@@ -53,7 +54,7 @@ func New(c *config.Config) Repository {
 		}
 		s := gocron.NewScheduler(time.UTC)
 		s.Every(1).Minutes().Do(func() {
-			r.updateFile()
+			r.update()
 		})
 		s.StartAsync()
 		return r

@@ -109,6 +109,10 @@ func (r *mockFileRepo) addBatch(urls []models.URL) error {
 	return nil
 }
 
+func (r *mockFileRepo) update() {
+	r.updateFile()
+}
+
 func (r *mockFileRepo) updateFile() {
 	log.Println("starting file update")
 	err := r.file.Truncate(0)
@@ -144,4 +148,14 @@ func (r *mockFileRepo) getByUser(userID string) ([]*models.URL, error) {
 func (r *mockFileRepo) ping() error {
 	_, err := os.Stat(r.file.Name())
 	return err
+}
+
+// Close closes file
+func (r *mockFileRepo) Close() error {
+	r.updateFile()
+	err := r.file.Close()
+	if err != nil {
+		return fmt.Errorf("error closing file : %v", err)
+	}
+	return nil
 }

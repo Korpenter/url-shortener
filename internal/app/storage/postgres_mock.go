@@ -175,3 +175,9 @@ func (r *postgresMockRepo) DeleteRepo(ctx context.Context) error {
 	}
 	return nil
 }
+
+// Close closes connection to db
+func (r *postgresMockRepo) Close() error {
+	r.conn.Close()
+	return nil
+}
