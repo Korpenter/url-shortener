@@ -30,6 +30,7 @@ const (
 	mockGetByUserQuery    = `SELECT * FROM urls_test WHERE userid = $1`
 	mockGetShort          = `SELECT short FROM urls_test WHERE original = $1`
 	mockCountUserURLs     = "SELECT count(*) FROM urls_test WHERE userid = $1"
+	getMockStats          = "SELECT COUNT(*), COUNT(DISTINCT(userid)) FROM urls_test;"
 	mockDrop              = `DROP TABLE urls_test`
 )
 
@@ -165,6 +166,16 @@ func (r *postgresMockRepo) DeleteURLs(deleteURLs []*models.DeleteURLItem) (int, 
 // Ping checks if file is available.
 func (r *postgresMockRepo) Ping(ctx context.Context) error {
 	return r.conn.Ping(ctx)
+}
+
+// Stats gets count of urls and registered users
+func (r *postgresMockRepo) Stats(ctx context.Context) (*models.Stats, error) {
+	var stats models.Stats
+	err := r.conn.QueryRow(ctx, getMockStats).Scan(&stats.UrlCount, &stats.UserCount)
+	if err != nil {
+		return nil, err
+	}
+	return &stats, nil
 }
 
 // DeleteRepo deletes repository tables.

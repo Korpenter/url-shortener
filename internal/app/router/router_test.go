@@ -6,6 +6,7 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"net/netip"
 	"os"
 	"strings"
 	"testing"
@@ -29,11 +30,19 @@ type test struct {
 	method      string
 	request     string
 	body        string
+	headers     map[string]string
 	want        want
 }
 
 func runRouterTest(t *testing.T, tests []test, db bool) {
-	cfg := &config.Config{ServerAddress: "localhost:8080", BaseURL: "http://localhost:8080"}
+	testSubnet := "192.168.1.0/24"
+	testPrefix, _ := netip.ParsePrefix(testSubnet)
+	cfg := &config.Config{
+		ServerAddress: "localhost:8080",
+		BaseURL:       "http://localhost:8080",
+		TrustedSubnet: testSubnet,
+		SubnetPrefix:  testPrefix,
+	}
 	var mockRepo storage.Repository
 	var prefix string
 	var err error
@@ -58,6 +67,9 @@ func runRouterTest(t *testing.T, tests []test, db bool) {
 			var err error
 			request := httptest.NewRequest(tt.method, tt.request, strings.NewReader(tt.body))
 			request.Header.Set("Accept-Encoding", tt.compression)
+			for k, v := range tt.headers {
+				request.Header.Set(k, v)
+			}
 			w := httptest.NewRecorder()
 			r.ServeHTTP(w, request)
 			result := w.Result()
@@ -429,6 +441,41 @@ func TestApiBatchDuplicate(t *testing.T) {
 				contentType: "application/json",
 				statusCode:  http.StatusConflict,
 				body:        `[{"correlation_id":"TestCorrelationID1","short_url":"http://localhost:8080/vRveliyDLz8"},{"correlation_id":"TestCorrelationID2","short_url":"http://localhost:8080/vRveliyDLz8"}]` + "\n",
+				location:    "",
+			},
+		},
+	}
+	runRouterTest(t, tests, true)
+	runRouterTest(t, tests, false)
+}
+
+func TestAPIInternalStats(t *testing.T) {
+	tests := []test{
+		{
+			name:        "Trusted network stats reqeust.",
+			compression: "gzip",
+			method:      http.MethodGet,
+			request:     "/api/internal/stats",
+			body:        `[{"correlation_id":"TestCorrelationID1","original_url":"https://github.com/"},{"correlation_id":"TestCorrelationID2","original_url":"https://github.com/"}]`,
+			headers:     map[string]string{"X-Real-IP": "192.168.1.1"},
+			want: want{
+				contentType: "application/json",
+				statusCode:  http.StatusOK,
+				body:        "{\"urls\":0,\"users\":1}\n",
+				location:    "",
+			},
+		},
+		{
+			name:        "Untrusted network stats request.",
+			compression: "gzip",
+			method:      http.MethodGet,
+			request:     "/api/internal/stats",
+			body:        "",
+			headers:     map[string]string{"X-Real-IP": "172.125.135.33"},
+			want: want{
+				contentType: "text/plain; charset=utf-8",
+				statusCode:  http.StatusForbidden,
+				body:        "untrusted user\n",
 				location:    "",
 			},
 		},

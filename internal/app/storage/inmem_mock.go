@@ -98,6 +98,14 @@ func (r *mockRepo) Ping(context.Context) error {
 	return nil
 }
 
+// Stats gets count of urls and registered users
+func (r *mockRepo) Stats(ctx context.Context) (*models.Stats, error) {
+	var stats models.Stats
+	stats.UrlCount = len(r.existingURLs)
+	stats.UserCount = len(r.urlsByUser)
+	return &stats, nil
+}
+
 // DeleteRepo deletes repository data.
 func (r *mockRepo) DeleteRepo(context.Context) error {
 	r.urlsByShort = make(map[string]*models.URL)

@@ -5,6 +5,7 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"net/netip"
 	"strings"
 
 	"github.com/Mldlr/url-shortener/internal/app/config"
@@ -95,4 +96,24 @@ func ExamplePing() {
 	fmt.Println(status)
 	// Output:
 	// 200
+}
+
+func ExampleAPIInternalStats() {
+	exampleSubnet := "192.168.1.0/24"
+	examplePrefix, _ := netip.ParsePrefix(exampleSubnet)
+	cfg := &config.Config{
+		ServerAddress: "localhost:8080",
+		BaseURL:       "http://localhost:8080",
+		TrustedSubnet: exampleSubnet,
+		SubnetPrefix:  examplePrefix,
+	}
+	repo := storage.NewInMemRepo()
+	r := NewRouter(repo, cfg)
+	request := httptest.NewRequest(http.MethodGet, "/api/internal/stats", nil)
+	request.Header.Set("X-Real-IP", "192.168.1.3")
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, request)
+	fmt.Println(w.Body)
+	// Output:
+	// {"urls":0,"users":0}
 }

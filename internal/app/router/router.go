@@ -35,5 +35,9 @@ func NewRouter(repo storage.Repository, c *config.Config) chi.Router {
 	r.Get("/{id}", handlers.Expand(repo))
 	r.Get("/ping", handlers.Ping(repo))
 	r.Post("/", handlers.Shorten(repo, c))
+	r.Group(func(r chi.Router) {
+		r.Use(middleware.Trusted{Config: c}.TrustCheck)
+		r.Get("/api/internal/stats", handlers.APIInternalStats(repo, c))
+	})
 	return r
 }

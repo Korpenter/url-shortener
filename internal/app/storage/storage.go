@@ -23,6 +23,7 @@ type Repository interface {
 	Ping(ctx context.Context) error
 	DeleteRepo(ctx context.Context) error
 	DeleteURLs(deleteURLs []*models.DeleteURLItem) (int, error)
+	Stats(ctx context.Context) (*models.Stats, error)
 	Close() error
 }
 

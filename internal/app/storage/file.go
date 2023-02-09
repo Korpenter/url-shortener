@@ -192,6 +192,16 @@ func (r *FileRepo) DeleteRepo(ctx context.Context) error {
 	return nil
 }
 
+// Stats gets count of urls and registered users
+func (r *FileRepo) Stats(ctx context.Context) (*models.Stats, error) {
+	r.RLock()
+	defer r.RUnlock()
+	var stats models.Stats
+	stats.UrlCount = len(r.existingURLs)
+	stats.UserCount = len(r.cacheByUser)
+	return &stats, nil
+}
+
 // Close closes file
 func (r *FileRepo) Close() error {
 	r.Lock()

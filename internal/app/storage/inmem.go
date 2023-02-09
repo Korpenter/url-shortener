@@ -115,6 +115,16 @@ func (r *InMemRepo) Ping(context.Context) error {
 	return nil
 }
 
+// Stats gets count of urls and registered users
+func (r *InMemRepo) Stats(ctx context.Context) (*models.Stats, error) {
+	r.RLock()
+	defer r.RUnlock()
+	var stats models.Stats
+	stats.UrlCount = len(r.existingURLs)
+	stats.UserCount = len(r.urlsByUser)
+	return &stats, nil
+}
+
 // DeleteRepo deletes repository data.
 func (r *InMemRepo) DeleteRepo(context.Context) error {
 	r.Lock()

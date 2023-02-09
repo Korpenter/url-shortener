@@ -50,3 +50,11 @@ type BatchRespItem struct {
 	// ShortURL is the shortened version of the URL.
 	ShortURL string `json:"short_url"`
 }
+
+// Stats structure
+type Stats struct {
+	// Count of urls in the service
+	UrlCount int `json:"urls"`
+	// Count of registered users
+	UserCount int `json:"users"`
+}
