@@ -177,7 +177,7 @@ func (r *PostgresRepo) DeleteRepo(ctx context.Context) error {
 // Stats gets count of urls and registered users
 func (r *PostgresRepo) Stats(ctx context.Context) (*models.Stats, error) {
 	var stats models.Stats
-	err := r.conn.QueryRow(ctx, getStats).Scan(&stats.UrlCount, &stats.UserCount)
+	err := r.conn.QueryRow(ctx, getStats).Scan(&stats.URLCount, &stats.UserCount)
 	if err != nil {
 		return nil, err
 	}

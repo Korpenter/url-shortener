@@ -54,7 +54,7 @@ type BatchRespItem struct {
 // Stats structure
 type Stats struct {
 	// Count of urls in the service
-	UrlCount int `json:"urls"`
+	URLCount int `json:"urls"`
 	// Count of registered users
 	UserCount int `json:"users"`
 }

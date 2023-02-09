@@ -120,7 +120,7 @@ func (r *InMemRepo) Stats(ctx context.Context) (*models.Stats, error) {
 	r.RLock()
 	defer r.RUnlock()
 	var stats models.Stats
-	stats.UrlCount = len(r.existingURLs)
+	stats.URLCount = len(r.existingURLs)
 	stats.UserCount = len(r.urlsByUser)
 	return &stats, nil
 }
