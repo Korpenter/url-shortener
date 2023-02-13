@@ -227,7 +227,7 @@ func TestGet(t *testing.T) {
 			want: want{
 				contentType: "text/plain; charset=utf-8",
 				statusCode:  http.StatusNotFound,
-				body:        "invalid id: 1sdG6\n",
+				body:        "repository error: invalid id: 1sdG6\n",
 				location:    "",
 			},
 		},

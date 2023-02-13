@@ -51,7 +51,7 @@ func (r *mockRepo) Add(ctx context.Context, url *models.URL) (bool, error) {
 }
 
 // AddBatch adds multiple URLs to storage.
-func (r *mockRepo) AddBatch(ctx context.Context, urls map[string]*models.URL) (bool, error) {
+func (r *mockRepo) AddBatch(ctx context.Context, urls []*models.URL) (bool, error) {
 	var duplicates bool
 	for _, v := range urls {
 		if i, k := r.existingURLs[v.LongURL]; k {

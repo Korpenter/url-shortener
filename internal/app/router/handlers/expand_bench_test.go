@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	"github.com/Mldlr/url-shortener/internal/app/models"
+	"github.com/Mldlr/url-shortener/internal/app/service"
 	"github.com/Mldlr/url-shortener/internal/app/storage"
 	"github.com/Mldlr/url-shortener/internal/app/utils/encoders"
 	"github.com/stretchr/testify/require"
@@ -24,14 +25,15 @@ func BenchmarkExpand(b *testing.B) {
 	} else {
 		repo = storage.NewMockRepo()
 	}
-	urls := make(map[string]*models.URL, 10000)
+	urls := make([]*models.URL, 10000)
 	for i := 0; i < 10000; i++ {
-		urls[fmt.Sprint(i)] = &models.URL{UserID: "user1",
+		urls[i] = &models.URL{UserID: "user1",
 			ShortURL: encoders.ToRBase62(fmt.Sprint(i)),
 			LongURL:  fmt.Sprint(i) + ".ru"}
 	}
 	repo.AddBatch(context.Background(), urls)
-	handler := Expand(repo)
+	shortener := service.NewShortenerImpl(repo, nil)
+	handler := Expand(shortener)
 	b.ResetTimer()
 	b.Run("Expand", func(b *testing.B) {
 		b.ReportAllocs()

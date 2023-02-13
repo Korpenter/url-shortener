@@ -93,7 +93,7 @@ func (r *FileRepo) Add(ctx context.Context, url *models.URL) (bool, error) {
 }
 
 // AddBatch adds multiple URLs to repository.
-func (r *FileRepo) AddBatch(ctx context.Context, urls map[string]*models.URL) (bool, error) {
+func (r *FileRepo) AddBatch(ctx context.Context, urls []*models.URL) (bool, error) {
 	r.Lock()
 	defer r.Unlock()
 	var duplicates bool

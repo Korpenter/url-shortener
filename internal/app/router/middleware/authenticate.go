@@ -7,6 +7,7 @@ import (
 
 	"github.com/Mldlr/url-shortener/internal/app/config"
 	"github.com/Mldlr/url-shortener/internal/app/utils/encoders"
+	"github.com/Mldlr/url-shortener/internal/app/utils/helpers"
 	"github.com/google/uuid"
 )
 
@@ -20,7 +21,7 @@ type Auth struct {
 func (a Auth) Authenticate(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Get the user ID from the request context.
-		switch userID, found := GetUserID(r); found {
+		switch userID, found := helpers.GetUserID(r); found {
 		case true:
 			// If the ID is found, check the signature.
 			requestSignature, err := r.Cookie("signature")
@@ -51,13 +52,4 @@ func (a Auth) Authenticate(next http.Handler) http.Handler {
 		}
 		next.ServeHTTP(w, r)
 	})
-}
-
-// GetUserID check for user_id cookie in request and returns its value if it is present.
-func GetUserID(r *http.Request) (string, bool) {
-	userID, err := r.Cookie("user_id")
-	if err != nil {
-		return "", false
-	}
-	return userID.Value, true
 }

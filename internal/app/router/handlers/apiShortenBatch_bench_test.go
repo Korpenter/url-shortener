@@ -11,6 +11,7 @@ import (
 
 	"github.com/Mldlr/url-shortener/internal/app/config"
 	"github.com/Mldlr/url-shortener/internal/app/models"
+	"github.com/Mldlr/url-shortener/internal/app/service"
 	"github.com/Mldlr/url-shortener/internal/app/storage"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/require"
@@ -27,8 +28,8 @@ func BenchmarkAPIShortenBatch(b *testing.B) {
 	} else {
 		repo = storage.NewMockRepo()
 	}
-
-	handler := APIShortenBatch(repo, cfg)
+	shortener := service.NewShortenerImpl(repo, cfg)
+	handler := APIShortenBatch(shortener)
 	ShortenItems := make([]models.BatchReqItem, 0, 10000)
 	for i := 0; i < cap(ShortenItems); i++ {
 		ShortenItems = append(ShortenItems, models.BatchReqItem{CorID: fmt.Sprint(i), OrigURL: uuid.NewString() + ".ru"})

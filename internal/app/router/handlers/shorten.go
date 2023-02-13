@@ -1,21 +1,24 @@
 package handlers
 
 import (
-	"fmt"
+	"errors"
 	"io"
 	"net/http"
-	"strings"
 
-	"github.com/Mldlr/url-shortener/internal/app/config"
 	"github.com/Mldlr/url-shortener/internal/app/models"
-	"github.com/Mldlr/url-shortener/internal/app/router/middleware"
-	"github.com/Mldlr/url-shortener/internal/app/storage"
-	"github.com/Mldlr/url-shortener/internal/app/utils/validators"
+	"github.com/Mldlr/url-shortener/internal/app/service"
+	"github.com/Mldlr/url-shortener/internal/app/utils/helpers"
 )
 
 // Shorten creates a new shortened URL.
-func Shorten(repo storage.Repository, c *config.Config) http.HandlerFunc {
+func Shorten(shortener service.ShortenerService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		// Get user ID from request.
+		userID, found := helpers.GetUserID(r)
+		if !found {
+			http.Error(w, "error getting user cookie", http.StatusInternalServerError)
+			return
+		}
 		// Read request body.
 		b, err := io.ReadAll(r.Body)
 		if err != nil {
@@ -23,40 +26,27 @@ func Shorten(repo storage.Repository, c *config.Config) http.HandlerFunc {
 			return
 		}
 		defer r.Body.Close()
-		// Check if body is a valid URL.
-		long := string(b)
-		if !validators.IsURL(long) {
-			http.Error(w, "invalid url", http.StatusBadRequest)
-			return
-		}
-		// Get new short URL ID.
-		id, err := repo.NewID(long)
-		if err != nil {
-			http.Error(w, fmt.Sprintf("error getting new id: %v", err), http.StatusInternalServerError)
-			return
-		}
-		// Get user ID from request.
-		userID, found := middleware.GetUserID(r)
-		if !found {
-			http.Error(w, fmt.Sprintf("error getting user cookie: %v", err), http.StatusInternalServerError)
-			return
-		}
+		var status int
+		url, err := shortener.Shorten(r.Context(), &models.URL{LongURL: string(b), UserID: userID})
 		// Create URL model, and add it to storage.
-		url := models.URL{ShortURL: id, LongURL: long, UserID: userID, Deleted: false}
-		duplicates, err := repo.Add(r.Context(), &url)
 		if err != nil {
-			http.Error(w, fmt.Sprintf("error adding record to db: %v", err), http.StatusInternalServerError)
-			return
+			// If there is an error, and its not a duplicate url
+			if errors.Is(err, models.ErrInvalidURL) {
+				http.Error(w, err.Error(), http.StatusBadRequest)
+				return
+			} else if !errors.Is(err, models.ErrDuplicate) {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
+			// If it is a duplicate url
+			status = http.StatusConflict
+		} else {
+			// If URL is new, return a created status.
+			status = http.StatusCreated
 		}
 		w.Header().Set("Content-Type", "text/plain")
-		if duplicates {
-			// If any of the URLs already exist, return a conflict status.
-			w.WriteHeader(http.StatusConflict)
-		} else {
-			// If all URLs are new, return a created status.
-			w.WriteHeader(http.StatusCreated)
-		}
-		if _, err = io.WriteString(w, strings.Join([]string{c.BaseURL, url.ShortURL}, "/")); err != nil {
+		w.WriteHeader(status)
+		if _, err = io.WriteString(w, shortener.BuildURL(url.ShortURL)); err != nil {
 			http.Error(w, "error building the response", http.StatusInternalServerError)
 		}
 	}

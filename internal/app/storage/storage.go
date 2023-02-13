@@ -18,7 +18,7 @@ type Repository interface {
 	Get(ctx context.Context, id string) (*models.URL, error)
 	GetByUser(ctx context.Context, userID string) ([]*models.URL, error)
 	Add(ctx context.Context, url *models.URL) (bool, error)
-	AddBatch(ctx context.Context, urls map[string]*models.URL) (bool, error)
+	AddBatch(ctx context.Context, urls []*models.URL) (bool, error)
 	NewID(url string) (string, error)
 	Ping(ctx context.Context) error
 	DeleteRepo(ctx context.Context) error

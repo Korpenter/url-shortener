@@ -4,14 +4,13 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/Mldlr/url-shortener/internal/app/config"
-	"github.com/Mldlr/url-shortener/internal/app/storage"
+	"github.com/Mldlr/url-shortener/internal/app/service"
 )
 
 // APIUserExpand returns the amount of registered users and stored urls
-func APIInternalStats(repo storage.Repository, c *config.Config) http.HandlerFunc {
+func APIInternalStats(shortener service.ShortenerService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		stats, err := repo.Stats(r.Context())
+		stats, err := shortener.Stats(r.Context())
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return

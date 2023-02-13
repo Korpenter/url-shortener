@@ -118,7 +118,7 @@ func (r *postgresMockRepo) Add(ctx context.Context, url *models.URL) (bool, erro
 }
 
 // AddBatch adds multiple URLs to repository.
-func (r *postgresMockRepo) AddBatch(ctx context.Context, urls map[string]*models.URL) (bool, error) {
+func (r *postgresMockRepo) AddBatch(ctx context.Context, urls []*models.URL) (bool, error) {
 	var duplicates bool
 	tx, err := r.conn.Begin(ctx)
 	if err != nil {

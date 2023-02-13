@@ -59,7 +59,7 @@ func (r *InMemRepo) Add(ctx context.Context, url *models.URL) (bool, error) {
 }
 
 // AddBatch adds multiple URLs to storage.
-func (r *InMemRepo) AddBatch(ctx context.Context, urls map[string]*models.URL) (bool, error) {
+func (r *InMemRepo) AddBatch(ctx context.Context, urls []*models.URL) (bool, error) {
 	r.Lock()
 	defer r.Unlock()
 	var duplicates bool
