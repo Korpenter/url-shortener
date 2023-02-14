@@ -44,8 +44,10 @@ func main() {
 	r := router.NewRouter(shortener, cfg)
 	s := server.NewServer(r, cfg)
 	log.Printf("Starting with cfg: %v", cfg)
-	grpcS := grpc.NewGRPCServer(shortener, cfg)
+	if cfg.GRPCAddress != "" {
+		grpcS := grpc.NewGRPCServer(shortener, cfg)
+		go grpcS.Run(context.Background())
+	}
 	go s.WaitForExitingSignal(15*time.Second, repo)
-	go grpcS.Run(context.Background())
 	s.Run()
 }
