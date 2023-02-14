@@ -3,7 +3,6 @@ package handler
 import (
 	"context"
 	"errors"
-	"fmt"
 
 	pb "github.com/Mldlr/url-shortener/internal/app/grpc/proto"
 	"github.com/Mldlr/url-shortener/internal/app/models"
@@ -32,25 +31,24 @@ func (h *ShortenerHandler) Shorten(ctx context.Context, in *pb.ShortenURLRequest
 	if !ok {
 		return nil, status.Error(codes.Internal, "error getting user cookie")
 	}
-	var exitStatus codes.Code
+	var statusCode codes.Code
 	url, err := h.shortener.Shorten(ctx, &models.URL{LongURL: in.OriginalURL, UserID: userID})
 	if err != nil {
 		// If there is an error, and its not a duplicate url
 		if errors.Is(err, models.ErrInvalidURL) {
 			return nil, status.Error(codes.InvalidArgument, err.Error())
 		} else if !errors.Is(err, models.ErrDuplicate) {
-			fmt.Println(err.Error())
 			return nil, status.Error(codes.Internal, err.Error())
 		}
 		// If it is a duplicate url
-		exitStatus = codes.AlreadyExists
+		statusCode = codes.AlreadyExists
 	} else {
 		// If URL is new, return a created status.
-		exitStatus = codes.OK
+		statusCode = codes.OK
 	}
 	var resp pb.ShortenURLResponse
 	resp.ShortURL = url.ShortURL
-	return &resp, status.Error(exitStatus, "")
+	return &resp, status.Error(statusCode, "")
 }
 
 // Expand return original url for short.

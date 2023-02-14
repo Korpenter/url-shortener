@@ -2,7 +2,6 @@ package server
 
 import (
 	"context"
-	"fmt"
 	"net/netip"
 	"testing"
 	"time"
@@ -113,7 +112,6 @@ func TestGRPCServer_DeleteURL(t *testing.T) {
 			outCtx := metadata.NewOutgoingContext(ctx, metadata.New(map[string]string{"user_id": tt.userID, "signature": tt.signature}))
 			_, err = c.DeleteBatch(outCtx, request)
 			if statusErr, ok := status.FromError(err); ok {
-				fmt.Println("1   ", tt.errCode.String(), statusErr.Code().String())
 				assert.Equal(t, tt.errCode.String(), statusErr.Code().String())
 			}
 			checkReq := &pb.ExpandURLRequest{
@@ -121,7 +119,7 @@ func TestGRPCServer_DeleteURL(t *testing.T) {
 			}
 			var statusCheckErr *status.Status
 
-			time.Sleep(time.Second * 15)
+			time.Sleep(time.Second * 10)
 			_, err = c.Expand(outCtx, checkReq)
 			statusCheckErr, _ = status.FromError(err)
 			assert.Equal(t, tt.checkErrCode.String(), statusCheckErr.Code().String())
