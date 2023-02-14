@@ -33,7 +33,7 @@ func APIDeleteBatch(shortener service.ShortenerService) http.HandlerFunc {
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
-		shortener.APIDeleteBatch(urlIDs, userID)
+		shortener.DeleteBatch(urlIDs, userID)
 		// Return an accepted status to indicate that the request has been
 		// received and is being processed.
 		w.WriteHeader(http.StatusAccepted)

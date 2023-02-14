@@ -24,6 +24,7 @@ type Config struct {
 	KeyFile       string `envconfig:"TLS_KEY_FILE" default:"key.pem" json:"key_file"`
 	TrustedSubnet string `envconfig:"TRUSTED_SUBNET" default:"" json:"trusted_subnet"`
 	SubnetPrefix  netip.Prefix
+	GRPCAddress   string `envconfig:"GRPC_ADDRESS" default:"" json:"grpc_address"`
 }
 
 // NewConfig initializes and returns a new Config struct. It reads
@@ -40,9 +41,10 @@ func NewConfig() *Config {
 	flag.StringVar(&c.PostgresURL, "d", c.PostgresURL, "postgres url")
 	flag.BoolVar(&c.EnableHTTPS, "s", c.EnableHTTPS, "enable https")
 	flag.StringVar(&c.CertFile, "l", c.CertFile, "tls cert file path")
-	flag.StringVar(&c.KeyFile, "key", c.KeyFile, "tls key file path")
+	flag.StringVar(&c.KeyFile, "p", c.KeyFile, "tls key file path")
 	flag.StringVar(&configFile, "c", configFile, "path to config file")
 	flag.StringVar(&c.TrustedSubnet, "t", c.TrustedSubnet, "trusted subnet CIDR")
+	flag.StringVar(&c.GRPCAddress, "g", c.GRPCAddress, "grpc listening port")
 	key := flag.String("k", "", "key")
 	flag.Parse()
 

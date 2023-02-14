@@ -12,6 +12,7 @@ import (
 	"testing"
 
 	"github.com/Mldlr/url-shortener/internal/app/config"
+	"github.com/Mldlr/url-shortener/internal/app/service"
 	"github.com/Mldlr/url-shortener/internal/app/storage"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -60,7 +61,8 @@ func runRouterTest(t *testing.T, tests []test, db bool) {
 		mockRepo = storage.NewMockRepo()
 		prefix = "InMem repo: "
 	}
-	r := NewRouter(mockRepo, cfg)
+	shortener := service.NewShortenerImpl(mockRepo, cfg)
+	r := NewRouter(shortener, cfg)
 	for _, tt := range tests {
 		t.Run(prefix+tt.name, func(t *testing.T) {
 			var reader io.ReadCloser
@@ -210,7 +212,7 @@ func TestGet(t *testing.T) {
 		{
 			name:    "GET present id ",
 			method:  http.MethodGet,
-			request: "/2",
+			request: "/aQqomlSbUsE",
 			body:    "",
 			want: want{
 				contentType: "",
@@ -461,7 +463,7 @@ func TestAPIInternalStats(t *testing.T) {
 			want: want{
 				contentType: "application/json",
 				statusCode:  http.StatusOK,
-				body:        "{\"urls\":0,\"users\":1}\n",
+				body:        "{\"urls\":2,\"users\":1}\n",
 				location:    "",
 			},
 		},

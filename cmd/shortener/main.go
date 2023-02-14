@@ -1,13 +1,16 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"time"
 
 	"github.com/Mldlr/url-shortener/internal/app/config"
+	grpc "github.com/Mldlr/url-shortener/internal/app/grpc/server"
 	"github.com/Mldlr/url-shortener/internal/app/router"
 	"github.com/Mldlr/url-shortener/internal/app/server"
+	"github.com/Mldlr/url-shortener/internal/app/service"
 	"github.com/Mldlr/url-shortener/internal/app/storage"
 )
 
@@ -37,9 +40,12 @@ func main() {
 
 	cfg := config.NewConfig()
 	repo := storage.New(cfg)
-	r := router.NewRouter(repo, cfg)
+	shortener := service.NewShortenerImpl(repo, cfg)
+	r := router.NewRouter(shortener, cfg)
 	s := server.NewServer(r, cfg)
 	log.Printf("Starting with cfg: %v", cfg)
+	grpcS := grpc.NewGRPCServer(shortener, cfg)
 	go s.WaitForExitingSignal(15*time.Second, repo)
+	go grpcS.Run(context.Background())
 	s.Run()
 }

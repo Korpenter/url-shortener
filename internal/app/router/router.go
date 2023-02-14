@@ -6,15 +6,14 @@ import (
 	"github.com/Mldlr/url-shortener/internal/app/router/handlers"
 	"github.com/Mldlr/url-shortener/internal/app/router/middleware"
 	"github.com/Mldlr/url-shortener/internal/app/service"
-	"github.com/Mldlr/url-shortener/internal/app/storage"
 	"github.com/go-chi/chi/v5"
 	chiMiddleware "github.com/go-chi/chi/v5/middleware"
 )
 
 // NewRouter initializes a chi router instance.
-func NewRouter(repo storage.Repository, c *config.Config) chi.Router {
+func NewRouter(shortener service.ShortenerService, c *config.Config) chi.Router {
 	// Initialize new loader to handle batch delete requests.
-	shortener := service.NewShortenerImpl(repo, c)
+
 	r := chi.NewRouter()
 
 	// Define used middlewares for all routes.

@@ -9,13 +9,15 @@ import (
 	"strings"
 
 	"github.com/Mldlr/url-shortener/internal/app/config"
+	"github.com/Mldlr/url-shortener/internal/app/service"
 	"github.com/Mldlr/url-shortener/internal/app/storage"
 )
 
 func ExampleShorten() {
 	cfg := &config.Config{ServerAddress: "localhost:8080", BaseURL: "http://localhost:8080"}
 	repo := storage.NewInMemRepo()
-	r := NewRouter(repo, cfg)
+	shortener := service.NewShortenerImpl(repo, cfg)
+	r := NewRouter(shortener, cfg)
 	request := httptest.NewRequest(http.MethodPost, "/", strings.NewReader("github.com"))
 	w := httptest.NewRecorder()
 	r.ServeHTTP(w, request)
@@ -30,7 +32,8 @@ func ExampleShorten() {
 func ExampleAPIShorten() {
 	cfg := &config.Config{ServerAddress: "localhost:8080", BaseURL: "http://localhost:8080"}
 	repo := storage.NewInMemRepo()
-	r := NewRouter(repo, cfg)
+	shortener := service.NewShortenerImpl(repo, cfg)
+	r := NewRouter(shortener, cfg)
 	request := httptest.NewRequest(http.MethodPost, "/api/shorten", strings.NewReader(`{"url":"github.com/"}`))
 	w := httptest.NewRecorder()
 	r.ServeHTTP(w, request)
@@ -46,8 +49,9 @@ func ExampleAPIShorten() {
 func ExampleExpand() {
 	cfg := &config.Config{ServerAddress: "localhost:8080", BaseURL: "http://localhost:8080"}
 	repo := storage.NewMockRepo()
-	r := NewRouter(repo, cfg)
-	request := httptest.NewRequest(http.MethodGet, "/1", nil)
+	shortener := service.NewShortenerImpl(repo, cfg)
+	r := NewRouter(shortener, cfg)
+	request := httptest.NewRequest(http.MethodGet, "/3S93m80EGmF", nil)
 	w := httptest.NewRecorder()
 	r.ServeHTTP(w, request)
 	header := w.Header()
@@ -59,7 +63,8 @@ func ExampleExpand() {
 func ExampleAPIShortenBatch() {
 	cfg := &config.Config{ServerAddress: "localhost:8080", BaseURL: "http://localhost:8080"}
 	repo := storage.NewInMemRepo()
-	r := NewRouter(repo, cfg)
+	shortener := service.NewShortenerImpl(repo, cfg)
+	r := NewRouter(shortener, cfg)
 	payload := `[{"correlation_id":"TestCorrelationID1","original_url":"https://github.com/"},{"correlation_id":"TestCorrelationID2","original_url":"https://yandex.com/"}]`
 	request := httptest.NewRequest(http.MethodPost, "/api/shorten/batch", strings.NewReader(payload))
 	w := httptest.NewRecorder()
@@ -75,7 +80,8 @@ func ExampleAPIShortenBatch() {
 func ExampleAPIDeleteBatch() {
 	cfg := &config.Config{ServerAddress: "localhost:8080", BaseURL: "http://localhost:8080"}
 	repo := storage.NewInMemRepo()
-	r := NewRouter(repo, cfg)
+	shortener := service.NewShortenerImpl(repo, cfg)
+	r := NewRouter(shortener, cfg)
 	request := httptest.NewRequest(http.MethodDelete, "/api/user/urls", strings.NewReader(`["c", "b"]`))
 	w := httptest.NewRecorder()
 	r.ServeHTTP(w, request)
@@ -88,7 +94,8 @@ func ExampleAPIDeleteBatch() {
 func ExamplePing() {
 	cfg := &config.Config{ServerAddress: "localhost:8080", BaseURL: "http://localhost:8080"}
 	repo := storage.NewInMemRepo()
-	r := NewRouter(repo, cfg)
+	shortener := service.NewShortenerImpl(repo, cfg)
+	r := NewRouter(shortener, cfg)
 	request := httptest.NewRequest(http.MethodGet, "/ping", nil)
 	w := httptest.NewRecorder()
 	r.ServeHTTP(w, request)
@@ -108,7 +115,8 @@ func ExampleAPIInternalStats() {
 		SubnetPrefix:  examplePrefix,
 	}
 	repo := storage.NewInMemRepo()
-	r := NewRouter(repo, cfg)
+	shortener := service.NewShortenerImpl(repo, cfg)
+	r := NewRouter(shortener, cfg)
 	request := httptest.NewRequest(http.MethodGet, "/api/internal/stats", nil)
 	request.Header.Set("X-Real-IP", "192.168.1.3")
 	w := httptest.NewRecorder()

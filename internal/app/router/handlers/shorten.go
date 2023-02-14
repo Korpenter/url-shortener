@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"errors"
+	"fmt"
 	"io"
 	"net/http"
 
@@ -22,7 +23,7 @@ func Shorten(shortener service.ShortenerService) http.HandlerFunc {
 		// Read request body.
 		b, err := io.ReadAll(r.Body)
 		if err != nil {
-			http.Error(w, "error reading request", http.StatusBadRequest)
+			http.Error(w, fmt.Sprintf("error reading request: %s", err.Error()), http.StatusBadRequest)
 			return
 		}
 		defer r.Body.Close()

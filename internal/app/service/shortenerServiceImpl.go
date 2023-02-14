@@ -43,7 +43,7 @@ func (s *ShortenerImpl) Expand(ctx context.Context, id string) (*models.URL, err
 }
 
 // APIDeleteBatch deletes a batch of urls by user
-func (s *ShortenerImpl) APIDeleteBatch(urlIDs []string, userID string) {
+func (s *ShortenerImpl) DeleteBatch(urlIDs []string, userID string) {
 	// Create a slice of DeleteURLItem objects from the URL IDs.
 	deleteURLs := make([]*models.DeleteURLItem, len(urlIDs))
 	for i, v := range urlIDs {
