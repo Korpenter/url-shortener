@@ -17,7 +17,7 @@ type Auth struct {
 	Config *config.Config
 }
 
-// Authenticate authenticates user request by adding user ID and signature cookies to the request
+// AuthInterceptor authenticates user request by adding user ID and signature cookies to the request
 // if they are not present or invalid.
 func (a *Auth) AuthInterceptor(ctx context.Context, req interface{}, _ *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
 	usermd, uOk := helpers.CheckMDValue(ctx, "user_id")

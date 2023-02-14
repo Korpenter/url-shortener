@@ -27,7 +27,7 @@ func APIShorten(shortener service.ShortenerService) http.HandlerFunc {
 			return
 		}
 		defer r.Body.Close()
-		var status int
+		var statusCode int
 		body.UserID = userID
 		url, err := shortener.Shorten(r.Context(), body)
 		// Create URL model, and add it to storage.
@@ -41,13 +41,13 @@ func APIShorten(shortener service.ShortenerService) http.HandlerFunc {
 				return
 			}
 			// If it is a duplicate url
-			status = http.StatusConflict
+			statusCode = http.StatusConflict
 		} else {
 			// If URL is new, return a created status.
-			status = http.StatusCreated
+			statusCode = http.StatusCreated
 		}
 		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(status)
+		w.WriteHeader(statusCode)
 		if err := json.NewEncoder(w).Encode(models.Response{Result: shortener.BuildURL(url.ShortURL)}); err != nil {
 			http.Error(w, "error building the response", http.StatusInternalServerError)
 			return

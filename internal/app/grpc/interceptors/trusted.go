@@ -16,7 +16,7 @@ type Trusted struct {
 	Config *config.Config
 }
 
-// TrustedCheck verifies request if it came from the trusted network
+// TrustInterceptor verifies request if it came from the trusted network
 // if request tries to access internal enpoints
 func (t *Trusted) TrustInterceptor(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
 	if info.FullMethod != "/proto.Shortener/InternalStats" {

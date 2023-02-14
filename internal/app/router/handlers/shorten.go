@@ -27,7 +27,7 @@ func Shorten(shortener service.ShortenerService) http.HandlerFunc {
 			return
 		}
 		defer r.Body.Close()
-		var status int
+		var statusCode int
 		url, err := shortener.Shorten(r.Context(), &models.URL{LongURL: string(b), UserID: userID})
 		// Create URL model, and add it to storage.
 		if err != nil {
@@ -40,13 +40,13 @@ func Shorten(shortener service.ShortenerService) http.HandlerFunc {
 				return
 			}
 			// If it is a duplicate url
-			status = http.StatusConflict
+			statusCode = http.StatusConflict
 		} else {
 			// If URL is new, return a created status.
-			status = http.StatusCreated
+			statusCode = http.StatusCreated
 		}
 		w.Header().Set("Content-Type", "text/plain")
-		w.WriteHeader(status)
+		w.WriteHeader(statusCode)
 		if _, err = io.WriteString(w, shortener.BuildURL(url.ShortURL)); err != nil {
 			http.Error(w, "error building the response", http.StatusInternalServerError)
 		}

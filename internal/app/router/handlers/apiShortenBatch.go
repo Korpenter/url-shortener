@@ -37,7 +37,7 @@ func APIShortenBatch(shortener service.ShortenerService) http.HandlerFunc {
 			}
 		}
 		// Add the URLs to the repository.
-		var status int
+		var statusCode int
 		shortenedURLs, err := shortener.ShortenBatch(r.Context(), userID, urls)
 		if err != nil {
 			// If there is an error, and its not a duplicate url
@@ -46,10 +46,10 @@ func APIShortenBatch(shortener service.ShortenerService) http.HandlerFunc {
 				return
 			}
 			// If it is a duplicate url
-			status = http.StatusConflict
+			statusCode = http.StatusConflict
 		} else {
 			// If URL is new, return a created status.
-			status = http.StatusCreated
+			statusCode = http.StatusCreated
 		}
 		respItems := make([]models.BatchRespItem, len(bodyItems))
 		for i, v := range bodyItems {
@@ -60,7 +60,7 @@ func APIShortenBatch(shortener service.ShortenerService) http.HandlerFunc {
 			}
 		}
 		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(status)
+		w.WriteHeader(statusCode)
 		if err := json.NewEncoder(w).Encode(respItems); err != nil || len(respItems) == 0 {
 			http.Error(w, "error building the response", http.StatusInternalServerError)
 			return
