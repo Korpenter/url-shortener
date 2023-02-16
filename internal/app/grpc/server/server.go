@@ -41,7 +41,6 @@ func (s *GRPCServer) Run(ctx context.Context) {
 	if err = srv.Serve(listener); err != nil {
 		log.Fatal(err)
 	}
-
 	<-ctx.Done()
 	srv.GracefulStop()
 }

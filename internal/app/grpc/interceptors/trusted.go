@@ -5,9 +5,9 @@ import (
 	"net/netip"
 
 	"github.com/Mldlr/url-shortener/internal/app/config"
+	"github.com/Mldlr/url-shortener/internal/app/utils/helpers"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
 )
 
@@ -25,18 +25,14 @@ func (t *Trusted) TrustInterceptor(ctx context.Context, req interface{}, info *g
 	if t.Config.TrustedSubnet == "" {
 		return nil, status.Error(codes.PermissionDenied, "untrusted user")
 	}
-	md, ok := metadata.FromIncomingContext(ctx)
+	usermd, ok := helpers.CheckMDValue(ctx, "X-Real-IP")
 	if ok {
-		ipmd := md.Get("X-Real-IP")
-		if len(ipmd) > 0 {
-			xRealIP := ipmd[0]
-			netip, err := netip.ParseAddr(xRealIP)
-			if err != nil {
-				return nil, status.Error(codes.PermissionDenied, err.Error())
-			}
-			if !t.Config.SubnetPrefix.Contains(netip) {
-				return nil, status.Error(codes.PermissionDenied, "untrusted user")
-			}
+		netip, err := netip.ParseAddr(usermd)
+		if err != nil {
+			return nil, status.Error(codes.PermissionDenied, err.Error())
+		}
+		if !t.Config.SubnetPrefix.Contains(netip) {
+			return nil, status.Error(codes.PermissionDenied, "untrusted user")
 		}
 	}
 	return handler(ctx, req)

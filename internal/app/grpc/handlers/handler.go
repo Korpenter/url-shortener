@@ -165,7 +165,5 @@ func (h *ShortenerHandler) DeleteBatch(ctx context.Context, in *pb.DeleteURLRequ
 	}
 	go h.shortener.DeleteBatch(in.Urls, userID)
 	var resp pb.DeleteURLResponse
-	// Return an accepted status to indicate that the request has been
-	// received and is being processed.
 	return &resp, nil
 }
