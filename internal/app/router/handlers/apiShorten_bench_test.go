@@ -11,6 +11,7 @@ import (
 
 	"github.com/Mldlr/url-shortener/internal/app/config"
 	"github.com/Mldlr/url-shortener/internal/app/models"
+	"github.com/Mldlr/url-shortener/internal/app/service"
 	"github.com/Mldlr/url-shortener/internal/app/storage"
 	"github.com/stretchr/testify/require"
 )
@@ -26,8 +27,8 @@ func BenchmarkShortenAPI(b *testing.B) {
 	} else {
 		repo = storage.NewMockRepo()
 	}
-
-	handler := APIShorten(repo, cfg)
+	shortener := service.NewShortenerImpl(repo, cfg)
+	handler := APIShorten(shortener)
 	b.ResetTimer()
 	b.Run("APIShorten", func(b *testing.B) {
 		b.ReportAllocs()

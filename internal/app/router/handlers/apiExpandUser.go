@@ -2,44 +2,40 @@ package handlers
 
 import (
 	"encoding/json"
+	"errors"
 	"net/http"
-	"strings"
 
-	"github.com/Mldlr/url-shortener/internal/app/config"
 	"github.com/Mldlr/url-shortener/internal/app/models"
-	"github.com/Mldlr/url-shortener/internal/app/router/middleware"
-	"github.com/Mldlr/url-shortener/internal/app/storage"
+	"github.com/Mldlr/url-shortener/internal/app/service"
+	"github.com/Mldlr/url-shortener/internal/app/utils/helpers"
 )
 
 // APIUserExpand retrieves the list of shortened URLs
 // created by a user and returns them as a JSON array.
-func APIUserExpand(repo storage.Repository, c *config.Config) http.HandlerFunc {
+func APIUserExpand(shortener service.ShortenerService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// Get the user ID from the request context.
-		userID, found := middleware.GetUserID(r)
+		userID, found := helpers.GetUserID(r)
 		if !found {
 			// return a no content status if the user ID is not found.
 			w.WriteHeader(http.StatusNoContent)
 			return
 		}
 		// Get the list of URLs created by user.
-		urls, err := repo.GetByUser(r.Context(), userID)
+		urls, err := shortener.ExpandUser(r.Context(), userID)
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			if !errors.Is(err, models.ErrNoContent) {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
+			http.Error(w, err.Error(), http.StatusNoContent)
 			return
 		}
-		if len(urls) == 0 {
-			// Return a no content status if the user has no URLs.
-			w.WriteHeader(http.StatusNoContent)
-			return
-		}
-		// Preallocate a slice of URLItem objects from the URLs.
-		URLItems := make([]models.URLItem, len(urls))
+		URLItems := make([]*models.URLItem, len(urls))
 		for i, v := range urls {
 			// Build the full shortened url from new id and service URL.
-			shortURL := strings.Join([]string{c.BaseURL, v.ShortURL}, "/")
-			URLItems[i] = models.URLItem{
-				ShortURL:    shortURL,
+			URLItems[i] = &models.URLItem{
+				ShortURL:    shortener.BuildURL(v.ShortURL),
 				OriginalURL: v.LongURL,
 			}
 		}

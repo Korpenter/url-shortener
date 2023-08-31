@@ -10,6 +10,7 @@ import (
 	"testing"
 
 	"github.com/Mldlr/url-shortener/internal/app/config"
+	"github.com/Mldlr/url-shortener/internal/app/service"
 	"github.com/Mldlr/url-shortener/internal/app/storage"
 	"github.com/stretchr/testify/require"
 )
@@ -26,8 +27,8 @@ func BenchmarkShorten(b *testing.B) {
 		repo = storage.NewMockRepo()
 	}
 	defer repo.DeleteRepo(context.Background())
-
-	handler := Shorten(repo, cfg)
+	shortener := service.NewShortenerImpl(repo, cfg)
+	handler := Shorten(shortener)
 	b.ResetTimer()
 	b.Run("Shorten", func(b *testing.B) {
 		for i := 0; i < b.N; i++ {

@@ -59,7 +59,7 @@ func (r *InMemRepo) Add(ctx context.Context, url *models.URL) (bool, error) {
 }
 
 // AddBatch adds multiple URLs to storage.
-func (r *InMemRepo) AddBatch(ctx context.Context, urls map[string]*models.URL) (bool, error) {
+func (r *InMemRepo) AddBatch(ctx context.Context, urls []*models.URL) (bool, error) {
 	r.Lock()
 	defer r.Unlock()
 	var duplicates bool
@@ -113,6 +113,16 @@ func (r *InMemRepo) DeleteURLs(deleteURLs []*models.DeleteURLItem) (int, error) 
 // Ping is redundant for in-memory storage.
 func (r *InMemRepo) Ping(context.Context) error {
 	return nil
+}
+
+// Stats gets count of urls and registered users
+func (r *InMemRepo) Stats(ctx context.Context) (*models.Stats, error) {
+	r.RLock()
+	defer r.RUnlock()
+	var stats models.Stats
+	stats.URLCount = len(r.existingURLs)
+	stats.UserCount = len(r.urlsByUser)
+	return &stats, nil
 }
 
 // DeleteRepo deletes repository data.

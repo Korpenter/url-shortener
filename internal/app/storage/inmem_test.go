@@ -70,8 +70,8 @@ func TestInMemRepo_GetByShort(t *testing.T) {
 	}{
 		{
 			name:    "Id in repo",
-			short:   "2",
-			want:    &models.URL{ShortURL: "2", LongURL: "https://yandex.ru/", UserID: "", Deleted: false},
+			short:   "aQqomlSbUsE",
+			want:    &models.URL{ShortURL: "aQqomlSbUsE", LongURL: "https://yandex.ru/", UserID: "KS097f1lS&F", Deleted: false},
 			wantErr: false,
 		},
 		{
@@ -111,13 +111,15 @@ func TestInMemRepo_GetByUser(t *testing.T) {
 			userID: "KS097f1lS&F",
 			want: []*models.URL{
 				{
-					ShortURL: "1",
+					ShortURL: "3S93m80EGmF",
 					LongURL:  "https://github.com/Mldlr/url-shortener/internal/app/utils/encoders",
+					UserID:   "KS097f1lS&F",
 				},
 
 				{
-					ShortURL: "2",
+					ShortURL: "aQqomlSbUsE",
 					LongURL:  "https://yandex.ru/",
+					UserID:   "KS097f1lS&F",
 				},
 			},
 			wantErr: false,
@@ -126,7 +128,7 @@ func TestInMemRepo_GetByUser(t *testing.T) {
 			name:    "User has no urls",
 			userID:  "SDADAD&FS()AS",
 			want:    nil,
-			wantErr: true,
+			wantErr: false,
 		},
 	}
 	mock := NewMockRepo()

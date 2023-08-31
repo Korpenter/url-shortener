@@ -7,9 +7,8 @@ import (
 	"log"
 	"os"
 
-	"github.com/Mldlr/url-shortener/internal/app/utils/encoders"
-
 	"github.com/Mldlr/url-shortener/internal/app/models"
+	"github.com/Mldlr/url-shortener/internal/app/utils/encoders"
 )
 
 type mockFileRepo struct {

@@ -108,7 +108,7 @@ func (r *PostgresRepo) Add(ctx context.Context, url *models.URL) (bool, error) {
 }
 
 // AddBatch adds multiple URLs to repository.
-func (r *PostgresRepo) AddBatch(ctx context.Context, urls map[string]*models.URL) (bool, error) {
+func (r *PostgresRepo) AddBatch(ctx context.Context, urls []*models.URL) (bool, error) {
 	var duplicates bool
 	tx, err := r.conn.Begin(ctx)
 	if err != nil {
@@ -159,7 +159,7 @@ func (r *PostgresRepo) NewID(url string) (string, error) {
 	return encoders.ToRBase62(url), nil
 }
 
-// Ping checks if file is available.
+// Ping checks if db is available.
 func (r *PostgresRepo) Ping(ctx context.Context) error {
 	return r.conn.Ping(ctx)
 }
@@ -172,6 +172,16 @@ func (r *PostgresRepo) DeleteRepo(ctx context.Context) error {
 		return err
 	}
 	return nil
+}
+
+// Stats gets count of urls and registered users
+func (r *PostgresRepo) Stats(ctx context.Context) (*models.Stats, error) {
+	var stats models.Stats
+	err := r.conn.QueryRow(ctx, getStats).Scan(&stats.URLCount, &stats.UserCount)
+	if err != nil {
+		return nil, err
+	}
+	return &stats, nil
 }
 
 // Close closes connection to db

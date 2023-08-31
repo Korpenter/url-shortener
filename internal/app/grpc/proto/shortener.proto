@@ -1,0 +1,100 @@
+syntax = "proto3";
+
+package proto;
+
+option go_package = "github.com/Mldlr/url-shortener/internal/app/grpc/proto";
+
+// Request to shorten url
+message ShortenURLRequest {
+  string originalURL = 1;
+}
+
+// Response with shortened url
+message ShortenURLResponse {
+  string shortURL = 1;
+}
+
+// Request original url for short
+message ExpandURLRequest {
+  string shortURL = 1;
+}
+
+// Respond with original url for short
+message ExpandURLResponse {
+  string originalURL = 1;
+}
+
+// Request all user urls
+message UserURLRequest {
+}
+
+// Response item
+message UserLink {
+  string shortURL = 1; 
+  string originalURL = 2;
+}
+
+// Respond with all user urls
+message UserURLResponse {
+  repeated UserLink urls = 1;
+}
+
+// Request to delete a list of short urls
+message DeleteURLRequest {
+  repeated string urls = 1;
+}
+
+// Response for deleting urls
+message DeleteURLResponse {
+}
+
+// Request item to shorten multiple urls
+message BatchRequstItem {
+  string correlationId = 1;
+  string originalURL = 2;
+}
+
+// Response item to shorten multiple urls
+message BatchResponseItem {
+  string correlationId = 1;
+  string shortURL = 2;
+}
+
+// Request to shorten multiple urls
+message BatchLinksRequest {
+  repeated BatchRequstItem BatchLinkRequestItem = 1;
+}
+
+// Response to shorten multiple urls
+message BatchLinksResponse {
+  repeated BatchResponseItem BatchLinkResponseItem = 1;
+}
+
+// Request shortener stats
+message StatsRequest {
+}
+
+// Response with shortener stats
+message StatsResponse {
+  int32 urlCount = 1;
+  int32 userCount = 2;
+}
+
+// Ping request to check availibility
+message PingRequest {
+}
+
+// Ping response to check availibility
+message PingResponse {
+}
+
+// Shortener service interactions
+service Shortener {
+  rpc Shorten(ShortenURLRequest) returns (ShortenURLResponse);
+  rpc Expand(ExpandURLRequest) returns (ExpandURLResponse);
+  rpc ExpandUser(UserURLRequest) returns (UserURLResponse);
+  rpc DeleteBatch(DeleteURLRequest) returns (DeleteURLResponse);
+  rpc ShortenBatch(BatchLinksRequest) returns (BatchLinksResponse);
+  rpc Ping(PingRequest) returns (PingResponse);
+  rpc InternalStats(StatsRequest) returns (StatsResponse);
+}

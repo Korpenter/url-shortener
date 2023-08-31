@@ -93,7 +93,7 @@ func (r *FileRepo) Add(ctx context.Context, url *models.URL) (bool, error) {
 }
 
 // AddBatch adds multiple URLs to repository.
-func (r *FileRepo) AddBatch(ctx context.Context, urls map[string]*models.URL) (bool, error) {
+func (r *FileRepo) AddBatch(ctx context.Context, urls []*models.URL) (bool, error) {
 	r.Lock()
 	defer r.Unlock()
 	var duplicates bool
@@ -190,6 +190,16 @@ func (r *FileRepo) DeleteRepo(ctx context.Context) error {
 		return fmt.Errorf("error deleting file : %v", err)
 	}
 	return nil
+}
+
+// Stats gets count of urls and registered users
+func (r *FileRepo) Stats(ctx context.Context) (*models.Stats, error) {
+	r.RLock()
+	defer r.RUnlock()
+	var stats models.Stats
+	stats.URLCount = len(r.existingURLs)
+	stats.UserCount = len(r.cacheByUser)
+	return &stats, nil
 }
 
 // Close closes file

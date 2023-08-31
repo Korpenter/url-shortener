@@ -10,6 +10,7 @@ import (
 
 	"github.com/Mldlr/url-shortener/internal/app/config"
 	"github.com/Mldlr/url-shortener/internal/app/models"
+	"github.com/Mldlr/url-shortener/internal/app/service"
 	"github.com/Mldlr/url-shortener/internal/app/storage"
 	"github.com/Mldlr/url-shortener/internal/app/utils/encoders"
 	"github.com/stretchr/testify/require"
@@ -26,10 +27,11 @@ func BenchmarkAPIUserExpandAPI(b *testing.B) {
 	} else {
 		repo = storage.NewMockRepo()
 	}
-	handler := APIUserExpand(repo, cfg)
-	urls := make(map[string]*models.URL, 10000)
+	shortener := service.NewShortenerImpl(repo, cfg)
+	handler := APIUserExpand(shortener)
+	urls := make([]*models.URL, 10000)
 	for i := 0; i < 10000; i++ {
-		urls[fmt.Sprint(i)] = &models.URL{UserID: "user1",
+		urls[i] = &models.URL{UserID: "user1",
 			ShortURL: encoders.ToRBase62(fmt.Sprint(i)),
 			LongURL:  fmt.Sprint(i) + ".com"}
 	}

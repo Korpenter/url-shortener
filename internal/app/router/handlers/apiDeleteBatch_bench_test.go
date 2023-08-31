@@ -11,7 +11,7 @@ import (
 	"testing"
 
 	"github.com/Mldlr/url-shortener/internal/app/models"
-	"github.com/Mldlr/url-shortener/internal/app/router/loader"
+	"github.com/Mldlr/url-shortener/internal/app/service"
 	"github.com/Mldlr/url-shortener/internal/app/storage"
 	"github.com/Mldlr/url-shortener/internal/app/utils/encoders"
 	"github.com/stretchr/testify/require"
@@ -28,11 +28,12 @@ func BenchmarkAPIDeleteBatchAPI(b *testing.B) {
 		repo = storage.NewInMemRepo()
 	}
 	defer repo.DeleteRepo(context.Background())
-	handler := APIDeleteBatch(loader.NewDeleteLoader(repo))
-	urls := make(map[string]*models.URL, 10000)
+	shoretner := service.NewShortenerImpl(repo, nil)
+	handler := APIDeleteBatch(shoretner)
+	urls := make([]*models.URL, 10000)
 	deleteURLs := make([]string, 10000)
 	for i := 0; i < 10000; i++ {
-		urls[fmt.Sprint(i)] = &models.URL{UserID: "user1",
+		urls[i] = &models.URL{UserID: "user1",
 			ShortURL: encoders.ToRBase62(fmt.Sprint(i)),
 			LongURL:  fmt.Sprint(i) + ".com"}
 	}
